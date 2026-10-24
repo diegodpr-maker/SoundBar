@@ -9,6 +9,7 @@ insert into auth.users(id,email) values
 (current_setting('test.soundbar.b')::uuid,current_setting('test.soundbar.b')||'@example.invalid');
 insert into public.sb_profiles(id,display_name) values
 (current_setting('test.soundbar.a')::uuid,'Tenant A'),(current_setting('test.soundbar.b')::uuid,'Tenant B');
+update public.sb_account_access set status='approved' where user_id in (current_setting('test.soundbar.a')::uuid,current_setting('test.soundbar.b')::uuid);
 set local role authenticated;
 select set_config('request.jwt.claim.sub',current_setting('test.soundbar.a'),true);
 insert into public.sb_playlists(id,name) values(current_setting('test.soundbar.playlist')::uuid,'Private A');
