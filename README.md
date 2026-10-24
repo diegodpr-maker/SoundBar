@@ -75,3 +75,9 @@ A biblioteca e a demonstração usam um elemento de áudio com controles nativos
 Ao abrir uma playlist, os áudios públicos conhecidos são preparados sem consultas adicionais. URLs privadas são geradas antecipadamente em lote, sujeitas às políticas do Storage. Até 64 MB são carregados em memória da sessão com duas transferências simultâneas; arquivos maiores continuam por streaming. O clique reutiliza o elemento de áudio preparado. A biblioteca também prepara as prévias. Aguarde “Áudios prontos” para obter a menor latência. Não há garantia de zero milissegundos no navegador nem de funcionamento instantâneo antes do primeiro carregamento.
 
 Os arquivos privados não são gravados em disco nem no cache do service worker. A memória é limpa ao sair da conta, fechar a página ou detectar bloqueio. Áudios em reprodução continuam ao trocar de playlist quando essa opção está habilitada.
+
+## Modo evento e armazenamento local
+
+Na playlist, “Biblioteca” insere exemplos diretamente, sem exportar um arquivo. As setas nos cards salvam a ordem. “Modo evento” oculta a navegação e solicita tela cheia e orientação horizontal; o navegador pode exigir rotação manual.
+
+“Salvar no celular” guarda os áudios em IndexedDB, cifrados com AES-GCM e uma chave não exportável por conta. A autenticação e a abertura do estúdio ainda exigem conexão: abra a playlist antes do evento e aguarde “Áudios prontos”. Até 64 MB são antecipados em memória; outros arquivos salvos são decifrados no primeiro toque. O armazenamento é específico do navegador/dispositivo e pode ser removido pelo sistema, por limpeza dos dados ou pelo botão “Limpar áudios locais”. Isso não é DRM: código executado na mesma origem e na sessão tem acesso à chave. Não há garantia de zero latência no hardware.
