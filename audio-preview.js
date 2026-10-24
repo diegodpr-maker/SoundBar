@@ -8,7 +8,7 @@ export function createPreviewPlayer(audio,onUpdate=()=>{}){
  async function toggle(item){
   if(current?.id===item.id&&!audio.paused&&!audio.ended){stop();return false}
   const token=++serial;
-  if(current?.id!==item.id){current=null;audio.pause();audio.src=item.url;audio.load();current={...item,state:'loading'}}
+  if(current?.id!==item.id||current?.url!==item.url||current?.state==='error'){current=null;audio.pause();audio.src=item.url;audio.load();current={...item,state:'loading'}}
   else if(audio.ended)audio.currentTime=0;
   audio.muted=false;
   try{
