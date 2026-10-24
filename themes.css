@@ -429,3 +429,5 @@ body.event-mode .app-main{padding-bottom:76px}
 [data-theme="light"] .status-pending{color:#805000}[data-theme="light"] .status-approved{color:#1450ad}[data-theme="light"] .status-blocked{color:#9c1831}
 [data-theme="light"] .toast{background:#163f79;color:#fff}[data-theme="light"] .toast.error,[data-theme="light"] .upload-diagnostics{background:#fff0f2;color:#86152b;border-color:#ae5266}[data-theme="light"] .notice{background:#fff6dd;color:#674400;border-color:#aa8132}
 @media(max-width:800px){[data-theme="light"] .stat small{font-size:11px}[data-theme="light"] .stat .caption{font-size:11px}[data-theme="light"] .playlist-card p{font-size:13px}[data-theme="light"] .card-bottom{font-size:12px}}
+
+.contributions-panel{margin-bottom:32px}.contribution-consent{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.6;margin:16px 0}.contribution-consent input{width:20px;min-width:20px;height:20px;margin-top:2px;accent-color:var(--accent)}

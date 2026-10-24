@@ -39,3 +39,7 @@ As operações autenticadas do app usam Bearer token no cabeçalho, e não cooki
 - CSP avaliada por inspeção e testes estáticos; validação visual/Console em navegadores reais e iPhone ainda é recomendada. Não houve scanner antivírus ou varredura de rede de terceiros.
 
 Referências: [CSP](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy), [funções Postgres/Supabase](https://supabase.com/docs/guides/database/functions), [Storage](https://supabase.com/docs/guides/storage/security/access-control).
+
+## Atualização: contribuições voluntárias
+
+O bucket privado soundbar-submissions armazena cópias explicitamente enviadas pelo usuário para revisão, com limite de 25 MB por arquivo e 100 MB por conta. O administrador tem acesso às cópias associadas às contribuições, sem ganhar acesso geral ao bucket de áudios pessoais. O usuário não pode atualizar nem aprovar o registro e a cópia pendente não pode ser alterada por UPDATE. A revisão usa função com verificação de administrador no servidor; a aprovação requer um item público existente com o ID da contribuição. O teste SQL verifica isolamento, autoaprovação, imutabilidade da cópia, manutenção da contribuição ao apagar o original e aprovação pelo administrador. A exclusão física de temporários é feita pela API do Storage; o teste SQL não desabilita a proteção de DELETE das tabelas do Storage. Isso é uma etapa de moderação privada, não uma implantação de antivírus ou validação automática integral no servidor.

@@ -99,3 +99,7 @@ No celular, a navegação usa um painel lateral acionado por ☰, com fechamento
 A abertura instalada e o acesso móvel à raiz passam pelo login, sem landing page. A sessão salva é verificada antes de abrir o painel; sessão expirada volta ao formulário. O manifesto mantém o mesmo id e inicia em login.html?pwa=1. A landing permanece no navegador desktop; atalhos antigos para a raiz são redirecionados pelo script carregado no head.
 
 A revisão de segurança está em [SECURITY_AUDIT.md](SECURITY_AUDIT.md), incluindo correções, verificações, limitações da CSP por meta no GitHub Pages e a pendência de quarentena/antivírus no servidor. Validação de áudio e SHA-256 no navegador não são garantia de ausência de malware.
+
+## Contribuições para a biblioteca
+
+Em Editar faixa, o dono de um áudio privado pode escolher “Enviar para a biblioteca”, fornecer autor/licença e declarar autorização de distribuição. Uma cópia verificada é guardada no bucket privado soundbar-submissions; o original permanece privado. O usuário acompanha a situação em Minhas contribuições. Apenas o administrador vê a fila em Gerenciar áudios, ouve a cópia enviada e publica ou recusa. O servidor impede autoaprovação e edição de situação direta, e a publicação usa ID estável para evitar duplicação em novas tentativas. Até 10 contribuições pendentes e 100 MB de cópias temporárias por usuário, com 25 MB por arquivo. A revisão humana não substitui antivírus/validação completa no servidor.

@@ -1,6 +1,6 @@
-import {inspectAudio,checkPlayable} from './audio-validation.js?v=21';
-import {createLibraryTransfer,retryRead,uploadStage} from './upload-transfer.js?v=21';
-import {loadCatalog,resolveSample,sampleById,sampleUrl,sampleBlob,saveBlob} from './samples.js?v=21';
+import {inspectAudio,checkPlayable,verifyStoredAudio} from './audio-validation.js?v=22';
+import {createLibraryTransfer,retryRead,uploadStage,transientNetwork} from './upload-transfer.js?v=22';
+import {loadCatalog,resolveSample,sampleById,sampleUrl,sampleBlob,saveBlob} from './samples.js?v=22';
 const BUCKET='soundbar-audio';export const MAX_FILE=25*1024*1024,MAX_STORAGE=200*1024*1024;
 export function validateConfig(config){const {supabaseUrl:url,supabaseKey:key}=config||{};if(!url||!key)throw Error('As contas estão aguardando a conexão com o Supabase. Você pode usar a versão local enquanto isso.');let parsed;try{parsed=new URL(url)}catch{throw Error('URL do Supabase inválida.')}if(parsed.protocol!=='https:'||!parsed.hostname.endsWith('.supabase.co')||parsed.pathname!=='/'||parsed.search||parsed.hash)throw Error('Use a URL HTTPS do projeto Supabase.');if(key.startsWith('sb_secret_'))throw Error('A chave secreta não pode ser usada neste site público.');if(!key.startsWith('sb_publishable_')){let role;try{role=JSON.parse(atob(key.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).role}catch{}if(role!=='anon')throw Error('Use somente a chave publicável ou anon do Supabase.')}return {url:parsed.origin,key};}
 function result(r){if(r.error){const error=r.error;if(['42P01','PGRST205'].includes(error.code))throw Error('O banco ainda precisa ser ativado no Supabase.');if(error.code==='42501')throw Error('Você não tem acesso a este recurso.');throw Object.assign(Error(error.message||'Não foi possível concluir.'),{code:error.code,status:error.status||error.statusCode})}return r.data}
@@ -26,6 +26,35 @@ export function createBackend(client){let cachedUser=null;client.auth.onAuthStat
  if(p==='/access')return accessState();
  if(p==='/me'){const access=await accessState();const data=access.status==='approved'?await profile():{id:u.id,email:u.email,display_name:text(u.user_metadata?.display_name)||text(u.email?.split('@')[0])||'Meu perfil'};return {profile:data,workspace:{id:u.id,name:data.workspace_name||'Meu estúdio'},access,limits:{file:MAX_FILE,storage:MAX_STORAGE}}}
  const access=await (p==='/admin/library'&&method==='POST'?uploadStage('Verificação da conta',()=>retryRead(()=>assertApproved())):assertApproved());
+ if(p==='/contributions')return result(await client.from('sb_library_submissions').select('*').eq('user_id',u.id).order('created_at',{ascending:false}));
+ const contribution=/^\/tracks\/([^/]+)\/contribute$/.exec(p);
+ if(contribution&&method==='POST'){
+ if(b.consent!==true||!/^[-0-9a-f]{36}$/.test(b.id||''))throw Error('Confirme a autorização de compartilhamento.');
+ const existing=result(await client.from('sb_library_submissions').select('*').eq('id',b.id).eq('user_id',u.id).maybeSingle());if(existing)return existing;
+ const t=await track(contribution[1]);if(!t.audio_path)throw Error('Contribua com um arquivo seu, importado para a playlist.');
+ const pending=result(await client.from('sb_library_submissions').select('id').eq('user_id',u.id).eq('source_track_id',t.id).eq('status','pending'));if(pending.length)throw Error('Esta faixa já está aguardando análise.');
+ const name=text(b.name,120),author=text(b.author,160),license=text(b.license,120),category=text(b.category,60)||'Comunidade',credit=text(b.credit,600);if(!name||!author||!license)throw Error('Preencha nome, autor e licença.');let source_url=text(b.source_url,2000)||null;if(source_url){const source=new URL(source_url);if(source.protocol!=='https:')throw Error('A origem deve ser um link HTTPS.');}
+ const blob=result(await client.storage.from(BUCKET).download(t.audio_path)),filename=text(t.filename,220),ext=filename.split('.').pop().toLowerCase();const {mime}=await inspectAudio(blob,filename);if(typeof Audio!=='undefined')await checkPlayable(new Blob([blob],{type:mime}));
+ const path=u.id+'/'+b.id+'.'+ext,storage=client.storage.from('soundbar-submissions');
+ const uploaded=await storage.upload(path,await blob.arrayBuffer(),{contentType:mime,upsert:false});if(uploaded.error&&!/already exists|duplicate/i.test(uploaded.error.message))result(uploaded);await verifyStoredAudio(blob,result(await storage.download(path)));
+ try{return result(await client.from('sb_library_submissions').insert({id:b.id,user_id:u.id,source_track_id:t.id,name,category,author,credit,license,source_url,consent:true,object_path:path,filename,mime,file_size:blob.size}).select().single());}catch(error){if(!transientNetwork(error))await storage.remove([path]).catch(()=>{});throw error}
+ }
+ if(p==='/admin/contributions'){
+ if(!access.is_admin)throw Error('Acesso exclusivo do administrador.');const rows=result(await client.from('sb_library_submissions').select('*').eq('status','pending').order('created_at'));
+ const urls=rows.length?result(await client.storage.from('soundbar-submissions').createSignedUrls(rows.map(r=>r.object_path),300)):[];return rows.map(r=>({...r,preview_url:urls.find(url=>url.path===r.object_path)?.signedUrl||null}));
+ }
+ const reviewContribution=/^\/admin\/contributions\/([^/]+)$/.exec(p);
+ if(reviewContribution&&method==='PATCH'){
+ if(!access.is_admin)throw Error('Acesso exclusivo do administrador.');if(!['approved','rejected'].includes(b.status))throw Error('Situação inválida.');
+ const submission=result(await client.from('sb_library_submissions').select('*').eq('id',reviewContribution[1]).single());
+ if(submission.status!=='pending')return{ok:true,status:submission.status};
+ if(b.status==='approved'){
+ const already=result(await client.from('sb_library_tracks').select('*').eq('id',submission.id).maybeSingle());
+ if(already&&already.object_path!=='custom/'+submission.id+'.'+submission.filename.split('.').pop().toLowerCase())throw Error('O cadastro existente não corresponde à contribuição.');if(!already){const blob=result(await client.storage.from('soundbar-submissions').download(submission.object_path));const transfer=createLibraryTransfer({storage:client.storage.from('soundbar-library'),unwrap:result,find:async id=>result(await client.from('sb_library_tracks').select('*').eq('id',id).maybeSingle()),insert:async row=>result(await client.from('sb_library_tracks').insert(row).select().single()),makeId:()=>submission.id});
+ await transfer(blob,{filename:submission.filename,metadata:{name:text(b.name,120)||submission.name,category:text(b.category,60)||submission.category,author:submission.author,credit:submission.credit,license:submission.license,source_url:submission.source_url}})}
+ }
+ result(await client.rpc('sb_review_submission',{target_submission:submission.id,new_status:b.status,published_id:b.status==='approved'?submission.id:null}));try{await retryRead(async()=>result(await client.storage.from('soundbar-submissions').remove([submission.object_path])))}catch{}return{ok:true};
+ }
  if(p==='/admin/library'){
  if(!access.is_admin)throw Error('Acesso exclusivo do administrador.');
  if(method==='GET')return result(await client.from('sb_library_tracks').select('*').eq('active',true).order('position').order('created_at'));
