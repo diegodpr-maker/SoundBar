@@ -95,3 +95,5 @@ A seleção de arquivos também é verificada localmente antes das requisições
 A marca pública é Sysmacom Harmony. O seletor Tema oferece Sistema, Claro e Escuro, com preferência local independente da sessão. No iPhone, abra no Safari e use Compartilhar → Adicionar à Tela de Início. A orientação horizontal e a tela cheia dependem do suporte do iOS; o modo evento também funciona com rotação manual.
 
 No celular, a navegação usa um painel lateral acionado por ☰, com fechamento por seleção, fundo e Escape e contenção do foco. A barra de reprodução só aparece após o evento real de reprodução, inclusive nas prévias, e recolhe durante pausa, espera ou encerramento. O conteúdo recupera o espaço inferior quando não há reprodução.
+
+A abertura instalada e o acesso móvel à raiz passam pelo login, sem landing page. A sessão salva é verificada antes de abrir o painel; sessão expirada volta ao formulário. O manifesto mantém o mesmo id e inicia em login.html?pwa=1. A landing permanece no navegador desktop; atalhos antigos para a raiz são redirecionados pelo script carregado no head.
