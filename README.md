@@ -78,6 +78,6 @@ Os arquivos privados não são gravados em disco nem no cache do service worker.
 
 ## Modo evento e armazenamento local
 
-Na playlist, “Biblioteca” insere exemplos diretamente, sem exportar um arquivo. As setas nos cards salvam a ordem. “Modo evento” oculta a navegação e solicita tela cheia e orientação horizontal; o navegador pode exigir rotação manual.
+Na playlist, “Biblioteca” insere exemplos diretamente, sem exportar um arquivo. Arraste a alça ⠿ do card para a nova posição. A ordem é salva em uma única operação; se falhar, a interface restaura a sequência anterior. A alça também aceita as setas do teclado. “Modo evento” oculta a navegação e solicita tela cheia e orientação horizontal; o navegador pode exigir rotação manual.
 
 “Salvar no celular” guarda os áudios em IndexedDB, cifrados com AES-GCM e uma chave não exportável por conta. A autenticação e a abertura do estúdio ainda exigem conexão: abra a playlist antes do evento e aguarde “Áudios prontos”. Até 64 MB são antecipados em memória; outros arquivos salvos são decifrados no primeiro toque. O armazenamento é específico do navegador/dispositivo e pode ser removido pelo sistema, por limpeza dos dados ou pelo botão “Limpar áudios locais”. Isso não é DRM: código executado na mesma origem e na sessão tem acesso à chave. Não há garantia de zero latência no hardware.
