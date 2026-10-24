@@ -16,6 +16,7 @@ export function registrationHandler({client,publicKey,anonKey,allowedOrigin,hash
  if(request.method==='OPTIONS')return new Response(null,{status:204,headers});
  if(request.method!=='POST')return reply({error:'Método não permitido.'},405);
  if(![publicKey,anonKey].filter(Boolean).includes(request.headers.get('apikey')))return reply({error:'Aplicativo não autorizado.'},401);
+ if(!/^application\/json(?:;|$)/i.test(request.headers.get('content-type')||''))return reply({error:'Envie JSON.'},415);
  try{
   if(Number(request.headers.get('content-length'))>4096)return reply({error:'Solicitação muito grande.'},413);
   if(!request.body)return reply({error:'Dados inválidos.'},400);

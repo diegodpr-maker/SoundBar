@@ -1,5 +1,5 @@
-const CACHE='sysmacom-harmony-pages-v19';
-const FILES=['./','./index.html','./local.html','./style.css','./themes.css','./theme.js','./pwa-entry.js','./landing.js','./samples.js','./audio-preview.js','./audio-pool.js','./harmony-icon-192.png','./harmony-icon-512.png'];
+const CACHE='sysmacom-harmony-pages-v20';
+const FILES=['./','./index.html','./local.html','./local.js','./security-utils.js','./style.css','./themes.css','./theme.js','./pwa-entry.js','./landing.js','./samples.js','./audio-preview.js','./audio-pool.js','./harmony-icon-192.png','./harmony-icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{for(const key of await caches.keys())if((key.startsWith('sounddeck-')||key.startsWith('soundbar-')||key.startsWith('sysmacom-harmony-'))&&key!==CACHE)await caches.delete(key);await self.clients.claim()})())});
 self.addEventListener('fetch',e=>{const url=new URL(e.request.url),base=new URL(self.registration.scope);if(e.request.method!=='GET'||url.origin!==base.origin||e.request.headers.has('range'))return;const allowed=FILES.some(p=>new URL(p,base).pathname===url.pathname);if(!allowed)return;e.respondWith((async()=>{const cache=await caches.open(CACHE);try{const r=await fetch(e.request);if(r.ok&&r.status===200)await cache.put(e.request,r.clone());return r}catch{return await cache.match(e.request,{ignoreSearch:true})||Response.error()}})())});

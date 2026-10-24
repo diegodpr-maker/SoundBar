@@ -97,3 +97,5 @@ A marca pública é Sysmacom Harmony. O seletor Tema oferece Sistema, Claro e Es
 No celular, a navegação usa um painel lateral acionado por ☰, com fechamento por seleção, fundo e Escape e contenção do foco. A barra de reprodução só aparece após o evento real de reprodução, inclusive nas prévias, e recolhe durante pausa, espera ou encerramento. O conteúdo recupera o espaço inferior quando não há reprodução.
 
 A abertura instalada e o acesso móvel à raiz passam pelo login, sem landing page. A sessão salva é verificada antes de abrir o painel; sessão expirada volta ao formulário. O manifesto mantém o mesmo id e inicia em login.html?pwa=1. A landing permanece no navegador desktop; atalhos antigos para a raiz são redirecionados pelo script carregado no head.
+
+A revisão de segurança está em [SECURITY_AUDIT.md](SECURITY_AUDIT.md), incluindo correções, verificações, limitações da CSP por meta no GitHub Pages e a pendência de quarentena/antivírus no servidor. Validação de áudio e SHA-256 no navegador não são garantia de ausência de malware.
