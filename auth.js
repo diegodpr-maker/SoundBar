@@ -1,4 +1,4 @@
-import {getBackend,validateConfig} from './backend.js?v=17';
+import {getBackend,validateConfig} from './backend.js?v=18';
 const $=s=>document.querySelector(s);let mode='login',backend=null;
 const message=t=>{$('#auth-message').hidden=false;$('#auth-message').textContent=t};
 function setMode(next){mode=next;$('#auth-title').textContent=mode==='signup'?'Solicite seu acesso.':'Bem-vindo de volta.';$('#auth-description').textContent=mode==='signup'?'Cadastre-se para a fase de testes. O administrador libera seu acesso.':'Entre para acompanhar sua liberação ou acessar seu estúdio.';$('#auth-submit').textContent=mode==='signup'?'Solicitar cadastro →':'Entrar →';$('#name-field').hidden=mode!=='signup';$('#display-name').required=mode==='signup';$('#password').autocomplete=mode==='login'?'current-password':'new-password';$('#password-help').hidden=mode==='login';$('#auth-toggle').textContent=mode==='login'?'Criar minha conta':'Já tenho conta';$('#auth-message').hidden=true;$('#password').value=''}
