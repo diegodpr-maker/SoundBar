@@ -1,4 +1,4 @@
-const CACHE='soundbar-pages-v4';
+const CACHE='soundbar-pages-v5';
 const FILES=['./','./index.html','./local.html','./style.css','./landing.js','./samples.js','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{for(const key of await caches.keys())if((key.startsWith('sounddeck-')||key.startsWith('soundbar-'))&&key!==CACHE)await caches.delete(key);await self.clients.claim()})())});
