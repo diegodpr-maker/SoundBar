@@ -1,4 +1,4 @@
-import {loadCatalog,resolveSample,sampleById,sampleUrl,sampleBlob,saveBlob} from './samples.js?v=9';
+import {loadCatalog,resolveSample,sampleById,sampleUrl,sampleBlob,saveBlob} from './samples.js?v=10';
 const BUCKET='soundbar-audio';export const MAX_FILE=25*1024*1024,MAX_STORAGE=200*1024*1024;
 export function validateConfig(config){const {supabaseUrl:url,supabaseKey:key}=config||{};if(!url||!key)throw Error('As contas estão aguardando a conexão com o Supabase. Você pode usar a versão local enquanto isso.');let parsed;try{parsed=new URL(url)}catch{throw Error('URL do Supabase inválida.')}if(parsed.protocol!=='https:'||!parsed.hostname.endsWith('.supabase.co')||parsed.pathname!=='/'||parsed.search||parsed.hash)throw Error('Use a URL HTTPS do projeto Supabase.');if(key.startsWith('sb_secret_'))throw Error('A chave secreta não pode ser usada neste site público.');if(!key.startsWith('sb_publishable_')){let role;try{role=JSON.parse(atob(key.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).role}catch{}if(role!=='anon')throw Error('Use somente a chave publicável ou anon do Supabase.')}return {url:parsed.origin,key};}
 function result(r){if(r.error){const error=r.error;if(['42P01','PGRST205'].includes(error.code))throw Error('O banco ainda precisa ser ativado no Supabase.');if(error.code==='42501')throw Error('Você não tem acesso a este recurso.');throw Error(error.message||'Não foi possível concluir.')}return r.data}
@@ -12,6 +12,7 @@ export function createBackend(client){let cachedUser=null;client.auth.onAuthStat
  async function playlist(id){const u=await user();return result(await client.from('sb_playlists').select('*').eq('id',id).eq('user_id',u.id).single())}
  async function track(id){const u=await user();return result(await client.from('sb_tracks').select('*').eq('id',id).eq('user_id',u.id).single())}
  async function privateURL(t){return result(await client.storage.from(BUCKET).createSignedUrl(t.audio_path,300)).signedUrl}
+ async function prepareAudio(tracks){await assertApproved();const paths=[...new Set(tracks.filter(t=>t.audio_path).map(t=>t.audio_path))];const signed=paths.length?result(await client.storage.from(BUCKET).createSignedUrls(paths,300)):[];const byPath=new Map(signed.filter(s=>s.signedUrl).map(s=>[s.path,s.signedUrl]));return Promise.all(tracks.map(async t=>{if(t.sample_id){const sample=await resolveSample(t.sample_id,client);return{id:t.id,url:sample.url,size:sample.file_size||0}}const url=byPath.get(t.audio_path);if(!url)throw Error('Não foi possível preparar '+t.name);return{id:t.id,url,size:t.file_size||0}}))}
  async function audioURL(id){await assertApproved();const t=await track(id);if(t.sample_id){await resolveSample(t.sample_id,client);return sampleUrl(t.sample_id)}return privateURL(t)}
  async function blobForTrack(id){await assertApproved();const t=await track(id);if(t.sample_id)await resolveSample(t.sample_id,client);return {track:t,blob:t.sample_id?await sampleBlob(t.sample_id):result(await client.storage.from(BUCKET).download(t.audio_path))}}
  async function downloadTrack(id){const {track:t,blob}=await blobForTrack(id);saveBlob(blob,t.filename||(t.sample_id?sampleById(t.sample_id).filename:t.name))}
@@ -21,7 +22,6 @@ export function createBackend(client){let cachedUser=null;client.auth.onAuthStat
  const u=await user();
  if(p==='/access')return accessState();
  if(p==='/me'){const access=await accessState();const data=access.status==='approved'?await profile():{id:u.id,email:u.email,display_name:text(u.user_metadata?.display_name)||text(u.email?.split('@')[0])||'Meu perfil'};return {profile:data,workspace:{id:u.id,name:data.workspace_name||'Meu estúdio'},access,limits:{file:MAX_FILE,storage:MAX_STORAGE}}}
- if(p==='/claim-admin'&&method==='POST'){result(await client.rpc('sb_claim_admin',{activation_code:b.activation_code}));return accessState()}
  const access=await assertApproved();
  if(p==='/admin/library'){
  if(!access.is_admin)throw Error('Acesso exclusivo do administrador.');
@@ -54,7 +54,7 @@ export function createBackend(client){let cachedUser=null;client.auth.onAuthStat
  const tm=/^\/tracks\/([^/]+)$/.exec(p);if(tm){const t=await track(tm[1]);if(method==='PATCH'){result(await client.from('sb_tracks').update({name:text(b.name),color:b.color}).eq('id',t.id).eq('user_id',u.id));return {ok:true}}if(method==='DELETE'){await removeTracks([t]);return {ok:true}}}
  throw Error('Operação não encontrada.');
  }
- return {call,audioURL,downloadTrack,blobForTrack,user,profile,accessState,register,client};
+ return {call,audioURL,downloadTrack,blobForTrack,user,profile,accessState,register,prepareAudio,client};
 }
 let instance;
 export async function getBackend(){if(!instance)instance=(async()=>{const {url,key}=validateConfig(globalThis.SOUNDBAR_CONFIG);const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2.57.4');return createBackend(createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'soundbar-supabase-session',flowType:'pkce'}}))})();try{return await instance}catch(e){instance=null;throw e}}

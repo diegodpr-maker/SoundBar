@@ -18,7 +18,6 @@ do $$begin
  begin insert into public.sb_playlists(name) values('Must fail');raise exception 'Pending insert succeeded';exception when insufficient_privilege then null;end;
  begin perform public.sb_review_account(auth.uid(),'approved');raise exception 'Self approval succeeded';exception when insufficient_privilege then null;end;
  begin update public.sb_account_access set status='approved' where user_id=auth.uid();raise exception 'Direct status change succeeded';exception when insufficient_privilege then null;end;
- begin perform public.sb_claim_admin(null);raise exception 'NULL bootstrap accepted';exception when insufficient_privilege then null;end;
  if (select count(*) from public.sb_account_access)<>1 then raise exception 'Pending user can inspect others';end if;
 end $$;
 select set_config('request.jwt.claim.sub',current_setting('test.sb.admin'),true);

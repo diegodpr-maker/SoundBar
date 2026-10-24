@@ -18,15 +18,15 @@ O cadastro usa a Edge Function `soundbar-register`, que cria a identidade Auth s
 
 A conta só acessa o estúdio depois de ser aprovada. As políticas restritivas verificam a situação no banco a cada operação; pendentes e bloqueados não acessam perfis, playlists, faixas nem objetos privados. Administradores não ganham acesso aos áudios de outras contas.
 
-O administrador inicial usa o e-mail definido pelo proprietário, registrado somente no banco. O proprietário recebe, fora do repositório, um código aleatório de uso único, válido por 48 horas. Depois de cadastrar e entrar com esse e-mail, abre **Primeiro acesso do administrador** na tela de espera e usa o código. Só o hash fica no esquema privado. Ninguém recebe administração apenas por usar um e-mail específico ou por ser o primeiro cadastro.
+O administrador já está cadastrado. A ativação inicial foi encerrada e seus endpoints e código de uso único foram removidos.
 
-Depois da ativação, **Administração** mostra os cadastros (até 200 mais recentes) e permite liberar, bloquear ou voltar uma conta a pendente. As decisões são verificadas por uma função do servidor e registradas em auditoria privada. O cliente não tem permissão de alterar a tabela de situação diretamente. Usuários comuns não podem promover contas, e a conta administradora não pode se bloquear por esse painel.
+No painel, **Administração** mostra os cadastros (até 200 mais recentes) e permite liberar, bloquear ou voltar uma conta a pendente. As decisões são verificadas por uma função do servidor e registradas em auditoria privada. O cliente não tem permissão de alterar a tabela de situação diretamente. Usuários comuns não podem promover contas, e a conta administradora não pode se bloquear por esse painel.
 
 A função pública de cadastro valida a chave pública do aplicativo, a origem, o tamanho e os campos da solicitação e aplica limites por e-mail, IP e totais. A chave administrativa fica somente nas variáveis de ambiente do Supabase. O app envia apenas nome, e-mail e senha; não aceita papéis, aprovação ou metadados de autorização. O e-mail não é verificado nesta fase; aprovação manual não é comprovação de titularidade desse endereço.
 
-Tabelas e políticas iniciais: `supabase/001_soundbar.sql`; aprovação: `supabase/003_manual_approval.sql`; regras explícitas das tabelas privadas: `supabase/004_private_table_policies.sql`. Os arquivos em `supabase/tests/` verificam aprovação e ativação inicial dentro de transações desfeitas. Não execute o teste de bootstrap depois que o administrador real estiver ativo.
+Tabelas e políticas iniciais: `supabase/001_soundbar.sql`; aprovação: `supabase/003_manual_approval.sql`; regras explícitas das tabelas privadas: `supabase/004_private_table_policies.sql`. Os arquivos em `supabase/tests/` verificam aprovação e permissões dentro de transações desfeitas.
 
-Não coloque o código inicial, `service_role`, `sb_secret_...`, senhas ou tokens administrativos no repositório. Se o código inicial expirar antes de ser usado, o proprietário precisa gerar outro hash por uma operação administrativa confiável.
+Nunca inclua chaves administrativas, senhas ou tokens no repositório público.
 
 ## Recursos
 
@@ -69,3 +69,9 @@ Os testes locais cobrem as chamadas do adaptador, propriedade das consultas, rej
 ## Reprodução das prévias
 
 A biblioteca e a demonstração usam um elemento de áudio com controles nativos e fixos, iniciando `play()` diretamente no clique, sem aguardar rede ou substituir o elemento. Se o navegador exigir outra interação, o player mostra uma mensagem para tocar no controle ▶. Os áudios da biblioteca são servidos pelo Storage público. O service worker não intercepta os áudios do Supabase nem pedidos de intervalos de bytes; o player usa diretamente o servidor de mídia.
+
+## Preparação para reprodução rápida
+
+Ao abrir uma playlist, os áudios públicos conhecidos são preparados sem consultas adicionais. URLs privadas são geradas antecipadamente em lote, sujeitas às políticas do Storage. Até 64 MB são carregados em memória da sessão com duas transferências simultâneas; arquivos maiores continuam por streaming. O clique reutiliza o elemento de áudio preparado. A biblioteca também prepara as prévias. Aguarde “Áudios prontos” para obter a menor latência. Não há garantia de zero milissegundos no navegador nem de funcionamento instantâneo antes do primeiro carregamento.
+
+Os arquivos privados não são gravados em disco nem no cache do service worker. A memória é limpa ao sair da conta, fechar a página ou detectar bloqueio. Áudios em reprodução continuam ao trocar de playlist quando essa opção está habilitada.
