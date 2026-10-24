@@ -15,3 +15,5 @@
 .pad-actions .pad-drag,.pad-actions .pad-edit{flex:0 0 44px}.pad-actions .pad-delete{flex:1 0 64px;padding:8px 4px}
 
 .library-upload-fields{border:0;padding:0;margin:0;min-width:0}.library-upload-fields:disabled{opacity:.65}#library-file-list{max-height:420px;overflow:auto}#library-file-list .field{padding:12px 0;border-bottom:1px solid var(--line)}
+
+.upload-diagnostics{padding:18px;margin-bottom:20px;border:1px solid #b56871;border-radius:12px;background:#391e26;color:#ffdae0;overflow-wrap:anywhere}.upload-diagnostics p{margin:10px 0 0;font-size:14px}.upload-diagnostics strong{display:block}#library-upload-status{white-space:pre-wrap;overflow-wrap:anywhere}
