@@ -8,18 +8,20 @@ A interface é HTML/CSS/JavaScript estático, publicada pelo **GitHub Pages**. O
 - Entrar/cadastrar: https://diegodpr-maker.github.io/SoundBar/login.html
 - PWA anterior, com os mesmos áudios salvos neste navegador: https://diegodpr-maker.github.io/SoundBar/local.html
 
-## Ativar o Supabase uma vez
+## Projeto conectado
 
-1. Crie um projeto no [Supabase](https://supabase.com/dashboard) ou conecte o plugin Supabase ao ChatGPT para continuarmos a configuração por aqui.
-2. No SQL Editor, execute [`supabase/001_soundbar.sql`](supabase/001_soundbar.sql). A migração cria três tabelas, políticas RLS e o bucket privado `soundbar-audio`. Use um projeto dedicado ou revise os nomes `sb_*` antes de aplicar a um projeto existente.
-3. Em **Authentication → URL Configuration**, configure:
-   - Site URL: `https://diegodpr-maker.github.io/SoundBar/`
-   - Redirect URLs: `https://diegodpr-maker.github.io/SoundBar/login.html` e `https://diegodpr-maker.github.io/SoundBar/login.html?reset=1`.
-4. Em **Authentication → Providers**, mantenha **Email** habilitado. Mantenha a confirmação de e-mail; não desative para contornar falhas. Configure SMTP próprio antes de abrir cadastros em volume, respeitando os limites do provedor.
-5. Em **Project Settings → API**, obtenha **Project URL** e a chave **Publishable** (`sb_publishable_...`) ou a antiga **anon**. Preencha `config.js` e salve no GitHub. Essas duas informações são públicas por projeto. **Nunca use `service_role`, `sb_secret_...`, senha do banco ou token de administração no site.**
-6. Aguarde o GitHub Pages e teste duas contas distintas. O arquivo [`supabase/002_verify_isolation.sql`](supabase/002_verify_isolation.sql) faz um teste transacional de isolamento no banco e desfaz as contas temporárias ao final.
+Projeto **SoundBar**, região São Paulo (`sa-east-1`), URL `https://fcmsojjtkiehsobbkjnr.supabase.co`. As tabelas, as políticas RLS e o bucket privado foram provisionados. `config.js` contém somente a chave publicável. O teste transacional de duas contas passou no banco real; os usuários de teste foram desfeitos e o verificador de segurança retornou sem alertas.
 
-Sem a configuração, a landing e os exemplos locais funcionam e a tela de entrada informa que as contas aguardam ativação. Nenhum cadastro é simulado. A integração real e as políticas precisam ser validadas no projeto Supabase após conexão.
+### Configurar os links de e-mail
+
+A integração usada nesta sessão não oferece a edição das configurações de Auth. No [painel de URLs do projeto](https://supabase.com/dashboard/project/fcmsojjtkiehsobbkjnr/auth/url-configuration), salve:
+
+- **Site URL:** `https://diegodpr-maker.github.io/SoundBar/`
+- **Redirect URLs:** `https://diegodpr-maker.github.io/SoundBar/login.html` e `https://diegodpr-maker.github.io/SoundBar/login.html?reset=1`.
+
+Isso permite voltar ao site após confirmar o e-mail ou recuperar a senha. Mantenha Email e confirmação habilitados. Não desative confirmação para contornar redirecionamentos. Para cadastros externos em volume, configure SMTP próprio no Supabase; o serviço de e-mail de desenvolvimento tem limites e restrições de destinatários.
+
+A migração aplicada é `soundbar_initial_schema`; o SQL correspondente está em `supabase/001_soundbar.sql`. Não a execute novamente no projeto já configurado. O script `supabase/002_verify_isolation.sql` permite repetir o teste com rollback. Nunca inclua chaves `service_role`, `sb_secret_...`, senhas ou tokens administrativos no código público.
 
 ## Recursos
 

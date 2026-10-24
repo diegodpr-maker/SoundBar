@@ -1,3 +1,2 @@
-// Somente URL e chave PUBLICÁVEL (sb_publishable_... ou anon).
-// Nunca coloque service_role, sb_secret_... ou senha do banco neste arquivo público.
-window.SOUNDBAR_CONFIG = Object.freeze({supabaseUrl:'',supabaseKey:''});
+// Configuração pública do projeto SoundBar. Acesso privado protegido por RLS.
+window.SOUNDBAR_CONFIG = Object.freeze({"supabaseUrl":"https://fcmsojjtkiehsobbkjnr.supabase.co","supabaseKey":"sb_publishable_yX33DKLkCPDsNdCSV3sJmA_bd8yrd3f"});

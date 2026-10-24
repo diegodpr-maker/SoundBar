@@ -1,6 +1,9 @@
 -- Execute uma vez no SQL Editor de um projeto Supabase.
 -- Namespaced tables avoid collisions with unrelated applications.
 begin;
+create schema if not exists soundbar_private;
+revoke all on schema soundbar_private from public,anon;
+grant usage on schema soundbar_private to authenticated;
 create table public.sb_profiles (
  id uuid primary key references auth.users(id) on delete cascade,
  display_name text not null default '' check(char_length(display_name)<=80),
@@ -38,6 +41,7 @@ create table public.sb_tracks (
        (sample_id is null and audio_path is not null and split_part(audio_path,'/',1)=user_id::text))
 );
 create index sb_tracks_owner_playlist_idx on public.sb_tracks(user_id,playlist_id);
+create index sb_tracks_playlist_owner_idx on public.sb_tracks(playlist_id,user_id);
 
 alter table public.sb_profiles enable row level security;
 alter table public.sb_playlists enable row level security;
@@ -51,7 +55,7 @@ revoke all on public.sb_profiles,public.sb_playlists,public.sb_tracks from anon;
 grant select,insert,update on public.sb_profiles to authenticated;
 grant select,insert,update,delete on public.sb_playlists,public.sb_tracks to authenticated;
 
-create function public.sb_limit_records() returns trigger language plpgsql security definer set search_path='' as $$
+create function soundbar_private.sb_limit_records() returns trigger language plpgsql security definer set search_path='' as $$
 begin
  if auth.uid() is null or new.user_id <> auth.uid() then raise exception 'Conta inválida.'; end if;
  perform 1 from public.sb_profiles where id=auth.uid() for update;
@@ -62,9 +66,9 @@ begin
  end if;
  return new;
 end;$$;
-revoke all on function public.sb_limit_records() from public,anon,authenticated;
-create trigger sb_playlist_quota before insert on public.sb_playlists for each row execute function public.sb_limit_records();
-create trigger sb_track_quota before insert on public.sb_tracks for each row execute function public.sb_limit_records();
+revoke all on function soundbar_private.sb_limit_records() from public,anon,authenticated;
+create trigger sb_playlist_quota before insert on public.sb_playlists for each row execute function soundbar_private.sb_limit_records();
+create trigger sb_track_quota before insert on public.sb_tracks for each row execute function soundbar_private.sb_limit_records();
 create function public.sb_touch_playlist() returns trigger language plpgsql set search_path='' as $$ begin new.updated_at=now();return new;end;$$;
 create trigger sb_playlist_updated before update on public.sb_playlists for each row execute function public.sb_touch_playlist();
 
@@ -72,7 +76,7 @@ insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types)
 values('soundbar-audio','soundbar-audio',false,26214400,array['audio/mpeg','audio/mp3','audio/wav','audio/x-wav','audio/ogg','application/ogg','audio/mp4','audio/x-m4a','audio/aac','audio/flac','audio/x-flac','audio/webm'])
 on conflict(id) do update set public=false,file_size_limit=excluded.file_size_limit,allowed_mime_types=excluded.allowed_mime_types;
 -- The Storage service supplies the actual byte count in metadata.
-create function public.sb_storage_quota(candidate jsonb) returns boolean language plpgsql security definer set search_path='' as $$
+create function soundbar_private.sb_storage_quota(candidate jsonb) returns boolean language plpgsql security definer set search_path='' as $$
 declare used_bytes bigint; incoming_bytes bigint;
 begin
  if auth.uid() is null then return false;end if;
@@ -84,11 +88,11 @@ begin
  from storage.objects where bucket_id='soundbar-audio' and (storage.foldername(name))[1]=auth.uid()::text;
  return used_bytes+incoming_bytes<=209715200;
 end;$$;
-revoke all on function public.sb_storage_quota(jsonb) from public,anon;
-grant execute on function public.sb_storage_quota(jsonb) to authenticated;
+revoke all on function soundbar_private.sb_storage_quota(jsonb) from public,anon;
+grant execute on function soundbar_private.sb_storage_quota(jsonb) to authenticated;
 create policy sb_audio_read on storage.objects for select to authenticated using(bucket_id='soundbar-audio' and (storage.foldername(name))[1]=(select auth.uid())::text);
 create policy sb_audio_upload on storage.objects for insert to authenticated with check(
- bucket_id='soundbar-audio' and (storage.foldername(name))[1]=(select auth.uid())::text and public.sb_storage_quota(metadata)
+ bucket_id='soundbar-audio' and (storage.foldername(name))[1]=(select auth.uid())::text and soundbar_private.sb_storage_quota(metadata)
 );
 create policy sb_audio_delete on storage.objects for delete to authenticated using(bucket_id='soundbar-audio' and (storage.foldername(name))[1]=(select auth.uid())::text);
 -- No UPDATE policy: existing objects cannot be overwritten or moved between owners.
