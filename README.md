@@ -42,7 +42,7 @@ A chave pública não concede acesso aos dados de outros usuários. A migração
 
 ## Exemplos e licenças
 
-Warm room, Primeiro sinal e Soft pulse são sintetizados localmente e dedicados a CC0. Funcionam sem Supabase. Carefree — Kevin MacLeod, CC BY 3.0, é carregada da [Wikimedia](https://commons.wikimedia.org/wiki/File:Kevin_MacLeod_-_Carefree.ogg) quando o visitante ouve ou baixa; precisa de internet e permite redistribuição com atribuição. O arquivo mantém os créditos na biblioteca e na página `credits.html`. O download externo depende de disponibilidade/CORS da origem; os exemplos locais não têm essa dependência.
+Warm room, Primeiro sinal e Soft pulse são sintetizados pelo SoundBar, distribuídos como MP3 na pasta `audio/` e dedicados a CC0. Funcionam sem Supabase. Carefree — Kevin MacLeod, CC BY 4.0, é carregada em MP3 do [Incompetech](https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400037) quando o visitante ouve ou baixa; precisa de internet e permite redistribuição com atribuição. O arquivo mantém os créditos na biblioteca e na página `credits.html`. O download externo depende de disponibilidade/CORS da origem; os exemplos locais não têm essa dependência.
 
 ## Desenvolvimento e verificação
 
@@ -59,3 +59,7 @@ node tests/delete-track.test.mjs
 ```
 
 Os testes locais cobrem as chamadas do adaptador, propriedade das consultas, rejeição de chaves secretas, limpeza de uploads que falharam, links relativos do Pages, cache, cancelamento de reprodução, exemplos WAV e requisitos estruturais da migração. A aprovação e o isolamento também foram testados no banco real com rollback; o adaptador usa um cliente de teste; **esses testes não substituem a aplicação e os testes das políticas em um Supabase real**. A verificação visual em navegador depende da disponibilidade do ambiente de execução.
+
+## Reprodução das prévias
+
+A biblioteca e a demonstração usam um elemento de áudio com controles nativos e fixos, iniciando `play()` diretamente no clique, sem aguardar rede ou substituir o elemento. Se o navegador exigir outra interação, o player mostra uma mensagem para tocar no controle ▶. Os três exemplos locais têm volume normalizado. O service worker atende intervalos de bytes dos MP3 em cache com respostas 206 e não tenta armazenar respostas parciais.

@@ -1,3 +1,3 @@
-import {samples,downloadSample} from './samples.js';
+import {samples,downloadSample} from './samples.js?v=8';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 document.querySelector('#credits').innerHTML=samples.map(s=>`<article><h2>${esc(s.name)}</h2><p>${esc(s.credit)}</p><p><a href="${esc(s.licenseUrl)}" target="_blank" rel="noopener">${esc(s.license)}</a> · <a href="${esc(s.source)}" target="_blank" rel="noopener">Fonte</a></p><button class="btn" data-download="${s.id}">↓ Baixar áudio</button><p class="fine" role="status"></p></article>`).join('');document.addEventListener('click',async e=>{const b=e.target.closest('[data-download]');if(!b)return;b.disabled=true;try{await downloadSample(b.dataset.download)}catch(error){b.parentElement.querySelector('[role=status]').textContent=error.message}finally{b.disabled=false}});
