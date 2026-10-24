@@ -1,0 +1,11 @@
+node_modules/
+dist/
+worker/assets.generated.js
+.env*
+.dev.vars*
+.wrangler/
+.sites-runtime/
+*.png
+!assets/icon.png
+!assets/icon-512.png
+outputs/
