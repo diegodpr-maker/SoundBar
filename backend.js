@@ -1,4 +1,4 @@
-import {samples,sampleById,sampleUrl,sampleBlob,saveBlob} from './samples.js?v=8';
+import {loadCatalog,resolveSample,sampleById,sampleUrl,sampleBlob,saveBlob} from './samples.js?v=9';
 const BUCKET='soundbar-audio';export const MAX_FILE=25*1024*1024,MAX_STORAGE=200*1024*1024;
 export function validateConfig(config){const {supabaseUrl:url,supabaseKey:key}=config||{};if(!url||!key)throw Error('As contas estão aguardando a conexão com o Supabase. Você pode usar a versão local enquanto isso.');let parsed;try{parsed=new URL(url)}catch{throw Error('URL do Supabase inválida.')}if(parsed.protocol!=='https:'||!parsed.hostname.endsWith('.supabase.co')||parsed.pathname!=='/'||parsed.search||parsed.hash)throw Error('Use a URL HTTPS do projeto Supabase.');if(key.startsWith('sb_secret_'))throw Error('A chave secreta não pode ser usada neste site público.');if(!key.startsWith('sb_publishable_')){let role;try{role=JSON.parse(atob(key.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).role}catch{}if(role!=='anon')throw Error('Use somente a chave publicável ou anon do Supabase.')}return {url:parsed.origin,key};}
 function result(r){if(r.error){const error=r.error;if(['42P01','PGRST205'].includes(error.code))throw Error('O banco ainda precisa ser ativado no Supabase.');if(error.code==='42501')throw Error('Você não tem acesso a este recurso.');throw Error(error.message||'Não foi possível concluir.')}return r.data}
@@ -12,17 +12,31 @@ export function createBackend(client){let cachedUser=null;client.auth.onAuthStat
  async function playlist(id){const u=await user();return result(await client.from('sb_playlists').select('*').eq('id',id).eq('user_id',u.id).single())}
  async function track(id){const u=await user();return result(await client.from('sb_tracks').select('*').eq('id',id).eq('user_id',u.id).single())}
  async function privateURL(t){return result(await client.storage.from(BUCKET).createSignedUrl(t.audio_path,300)).signedUrl}
- async function audioURL(id){await assertApproved();const t=await track(id);return t.sample_id?sampleUrl(t.sample_id):privateURL(t)}
- async function blobForTrack(id){await assertApproved();const t=await track(id);return {track:t,blob:t.sample_id?await sampleBlob(t.sample_id):result(await client.storage.from(BUCKET).download(t.audio_path))}}
+ async function audioURL(id){await assertApproved();const t=await track(id);if(t.sample_id){await resolveSample(t.sample_id,client);return sampleUrl(t.sample_id)}return privateURL(t)}
+ async function blobForTrack(id){await assertApproved();const t=await track(id);if(t.sample_id)await resolveSample(t.sample_id,client);return {track:t,blob:t.sample_id?await sampleBlob(t.sample_id):result(await client.storage.from(BUCKET).download(t.audio_path))}}
  async function downloadTrack(id){const {track:t,blob}=await blobForTrack(id);saveBlob(blob,t.filename||(t.sample_id?sampleById(t.sample_id).filename:t.name))}
  async function removeTracks(tracks){const u=await user(),paths=tracks.map(t=>t.audio_path).filter(Boolean);if(paths.length)result(await client.storage.from(BUCKET).remove(paths));if(tracks.length)result(await client.from('sb_tracks').delete().in('id',tracks.map(t=>t.id)).eq('user_id',u.id));}
  async function call(path,options={}){const method=options.method||'GET',b=options.body||{},url=new URL(path,'https://soundbar.local'),p=url.pathname;
- if(p==='/samples')return samples;
+ if(p==='/samples')return loadCatalog(client);
  const u=await user();
  if(p==='/access')return accessState();
  if(p==='/me'){const access=await accessState();const data=access.status==='approved'?await profile():{id:u.id,email:u.email,display_name:text(u.user_metadata?.display_name)||text(u.email?.split('@')[0])||'Meu perfil'};return {profile:data,workspace:{id:u.id,name:data.workspace_name||'Meu estúdio'},access,limits:{file:MAX_FILE,storage:MAX_STORAGE}}}
  if(p==='/claim-admin'&&method==='POST'){result(await client.rpc('sb_claim_admin',{activation_code:b.activation_code}));return accessState()}
  const access=await assertApproved();
+ if(p==='/admin/library'){
+ if(!access.is_admin)throw Error('Acesso exclusivo do administrador.');
+ if(method==='GET')return result(await client.from('sb_library_tracks').select('*').eq('active',true).order('position').order('created_at'));
+ if(method==='POST'){
+ if(!(b instanceof Blob)||b.size<1||b.size>50*1024*1024)throw Error('Escolha um áudio de até 50 MB.');
+ const name=text(url.searchParams.get('name'),120),category=text(url.searchParams.get('category'),60)||'Personalizados',credit=text(url.searchParams.get('credit'),600);if(!name)throw Error('Informe o nome do áudio.');
+ let filename;try{filename=decodeURIComponent(options.headers?.['X-File-Name']||'')}catch{filename=''}
+ const ext=(filename.match(/\.(mp3|wav|ogg|m4a|aac|flac|webm)$/i)||[])[1]?.toLowerCase();if(!ext)throw Error('Formato de áudio não reconhecido.');
+ const mime=({mp3:'audio/mpeg',wav:'audio/wav',ogg:'audio/ogg',m4a:'audio/mp4',aac:'audio/aac',flac:'audio/flac',webm:'audio/webm'})[ext],id=crypto.randomUUID(),path='custom/'+id+'.'+ext;
+ result(await client.storage.from('soundbar-library').upload(path,b,{contentType:mime,upsert:false}));
+ try{const audio_url=client.storage.from('soundbar-library').getPublicUrl(path).data.publicUrl;return result(await client.from('sb_library_tracks').insert({id,name,category,credit,object_path:path,audio_url,filename:text(filename,220),mime,file_size:b.size,active:true,position:-1}).select().single())}catch(error){await client.storage.from('soundbar-library').remove([path]);throw error}
+ }
+ }
+ const retire=/^\/admin\/library\/([^/]+)$/.exec(p);if(retire&&method==='DELETE'){if(!access.is_admin)throw Error('Acesso exclusivo do administrador.');result(await client.from('sb_library_tracks').update({active:false}).eq('id',retire[1]));return {ok:true}}
  if(p==='/admin/accounts'){if(!access.is_admin)throw Error('Acesso exclusivo do administrador.');return result(await client.from('sb_account_access').select('*').order('requested_at',{ascending:false}).limit(200))}
  const review=/^\/admin\/accounts\/([^/]+)$/.exec(p);if(review&&method==='PATCH'){if(!access.is_admin)throw Error('Acesso exclusivo do administrador.');result(await client.rpc('sb_review_account',{target_user:review[1],new_status:b.status}));return {ok:true}}
 
@@ -34,7 +48,7 @@ export function createBackend(client){let cachedUser=null;client.auth.onAuthStat
  if(!part&&method==='GET')return {playlist:list,tracks:result(await client.from('sb_tracks').select('*').eq('playlist_id',id).eq('user_id',u.id).order('position').order('created_at'))};
  if(!part&&method==='PATCH'){const {name,description,color,play_mode,loop,retrigger,switch_mode}=b;result(await client.from('sb_playlists').update({name:text(name),description:text(description,300),color,play_mode,loop,retrigger,switch_mode}).eq('id',id).eq('user_id',u.id));return {ok:true}}
  if(!part&&method==='DELETE'){const tracks=result(await client.from('sb_tracks').select('*').eq('playlist_id',id).eq('user_id',u.id));await removeTracks(tracks);result(await client.from('sb_playlists').delete().eq('id',id).eq('user_id',u.id));return {ok:true}}
- if(part==='tracks'&&method==='POST'){const sample=sampleById(b.sample_id);return result(await client.from('sb_tracks').insert({user_id:u.id,playlist_id:id,name:text(b.name)||sample.name,color:b.color||list.color,sample_id:sample.id}).select('id').single())}
+ if(part==='tracks'&&method==='POST'){const sample=await resolveSample(b.sample_id,client,true);if(!sample.active)throw Error('Este item foi retirado da biblioteca.');return result(await client.from('sb_tracks').insert({user_id:u.id,playlist_id:id,name:text(b.name)||text(sample.name),color:b.color||list.color,sample_id:sample.id}).select('id').single())}
  if(part==='upload'&&method==='POST'){if(!(b instanceof Blob)||b.size<1||b.size>MAX_FILE)throw Error('Escolha um arquivo de áudio de até 25 MB.');let filename;try{filename=decodeURIComponent(options.headers?.['X-File-Name']||'audio')}catch{filename='audio'}const ext=(filename.match(/\.(mp3|wav|ogg|m4a|aac|flac|webm)$/i)||[])[1]?.toLowerCase();if(!ext)throw Error('Formato não reconhecido. Use MP3, WAV, OGG, M4A, AAC ou FLAC.');const mime=({mp3:'audio/mpeg',wav:'audio/wav',ogg:'audio/ogg',m4a:'audio/mp4',aac:'audio/aac',flac:'audio/flac',webm:'audio/webm'})[ext];const audio_path=u.id+'/'+crypto.randomUUID()+'.'+ext;result(await client.storage.from(BUCKET).upload(audio_path,b,{contentType:mime,upsert:false}));try{return result(await client.from('sb_tracks').insert({user_id:u.id,playlist_id:id,name:text(url.searchParams.get('name'))||text(filename.replace(/\.[^.]+$/,'')),color:list.color,audio_path,filename:text(filename,120),mime,file_size:b.size}).select('id').single())}catch(error){await client.storage.from(BUCKET).remove([audio_path]);throw error}}
  }
  const tm=/^\/tracks\/([^/]+)$/.exec(p);if(tm){const t=await track(tm[1]);if(method==='PATCH'){result(await client.from('sb_tracks').update({name:text(b.name),color:b.color}).eq('id',t.id).eq('user_id',u.id));return {ok:true}}if(method==='DELETE'){await removeTracks([t]);return {ok:true}}}

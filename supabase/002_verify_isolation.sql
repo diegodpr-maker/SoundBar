@@ -4,6 +4,7 @@ begin;
 select set_config('test.soundbar.a',gen_random_uuid()::text,true);
 select set_config('test.soundbar.b',gen_random_uuid()::text,true);
 select set_config('test.soundbar.playlist',gen_random_uuid()::text,true);
+select set_config('test.soundbar.sample',(select id from public.sb_library_tracks where active order by position limit 1),true);
 insert into auth.users(id,email) values
 (current_setting('test.soundbar.a')::uuid,current_setting('test.soundbar.a')||'@example.invalid'),
 (current_setting('test.soundbar.b')::uuid,current_setting('test.soundbar.b')||'@example.invalid');
@@ -13,7 +14,7 @@ update public.sb_account_access set status='approved' where user_id in (current_
 set local role authenticated;
 select set_config('request.jwt.claim.sub',current_setting('test.soundbar.a'),true);
 insert into public.sb_playlists(id,name) values(current_setting('test.soundbar.playlist')::uuid,'Private A');
-insert into public.sb_tracks(playlist_id,name,sample_id) values(current_setting('test.soundbar.playlist')::uuid,'Intro','intro');
+insert into public.sb_tracks(playlist_id,name,sample_id) values(current_setting('test.soundbar.playlist')::uuid,'Example',current_setting('test.soundbar.sample'));
 do $$ begin
  if (select count(*) from public.sb_playlists)<>1 then raise exception 'Owner cannot read playlist';end if;
  if (select count(*) from public.sb_tracks)<>1 then raise exception 'Owner cannot read track';end if;
@@ -26,7 +27,7 @@ do $$ declare n bigint;begin
  update public.sb_playlists set name='Hacked' where id=current_setting('test.soundbar.playlist')::uuid;
  get diagnostics n=row_count;if n<>0 then raise exception 'Cross-tenant update allowed';end if;
  begin
-  insert into public.sb_tracks(playlist_id,name,sample_id) values(current_setting('test.soundbar.playlist')::uuid,'Cross tenant','intro');
+  insert into public.sb_tracks(playlist_id,name,sample_id) values(current_setting('test.soundbar.playlist')::uuid,'Cross tenant',current_setting('test.soundbar.sample'));
   raise exception 'Cross-tenant foreign key accepted';
  exception when foreign_key_violation then null;end;
  begin

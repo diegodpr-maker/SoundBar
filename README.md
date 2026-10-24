@@ -40,9 +40,15 @@ Cada usuário autenticado é um tenant. `auth.uid()` controla as políticas Post
 
 A chave pública não concede acesso aos dados de outros usuários. A migração remove o acesso anônimo às tabelas da aplicação. O cache do PWA não armazena respostas do Supabase, URLs privadas, tokens nem dados do dashboard. O SDK gerencia sessão e renovação de tokens. Saída da conta também interrompe os áudios e encerra a interface de outras abas.
 
-## Exemplos e licenças
+## Biblioteca administrável
 
-Warm room, Primeiro sinal e Soft pulse são sintetizados pelo SoundBar, distribuídos como MP3 na pasta `audio/` e dedicados a CC0. Funcionam sem Supabase. Carefree — Kevin MacLeod, CC BY 4.0, é carregada em MP3 do [Incompetech](https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400037) quando o visitante ouve ou baixa; precisa de internet e permite redistribuição com atribuição. O arquivo mantém os créditos na biblioteca e na página `credits.html`. O download externo depende de disponibilidade/CORS da origem; os exemplos locais não têm essa dependência.
+A biblioteca foi substituída pelos áudios de [Músicas para Harmonia — O Pacificador](https://www.opacificador.com.br/node/56). Foram baixados e validados **26 MP3** (67.442.521 bytes), apresentados em **28 itens**, respeitando os títulos repetidos da página. Os quatro textos sem link na origem não têm arquivo para importar. Os arquivos estão no bucket público `soundbar-library`; a reprodução e o download não dependem mais de acessar o site de origem. Os créditos apontam para a página, que não informa licença de redistribuição. Não são apresentados como CC0 ou como obras de uso livre.
+
+Administradores veem **Gerenciar áudios** no menu e **Gerenciar biblioteca** na biblioteca. Podem enviar um arquivo de até 50 MB, dar nome, categoria e créditos, ou retirar um item da lista. O catálogo é atualizado no Supabase, sem precisar republicar o GitHub. As políticas do banco e do Storage restringem essas alterações a administradores aprovados.
+
+Retirar um item altera `active=false`: ele desaparece da biblioteca pública e não pode ser adicionado a novas faixas. Faixas que já o usam continuam funcionando. Os quatro exemplos antigos ficaram inativos; suas referências foram preservadas somente para não quebrar playlists existentes. Não foi removido nenhum áudio particular de usuário.
+
+`sb_library_tracks` guarda o catálogo e `sb_library_imports` registra a importação. As migrações 005–007 criam catálogo, referências e validação dos itens ativos. O transporte temporário da importação foi desativado e a extensão de rede usada só para a transferência foi removida. O envio normal pelo painel não depende desse importador.
 
 ## Desenvolvimento e verificação
 
@@ -62,4 +68,4 @@ Os testes locais cobrem as chamadas do adaptador, propriedade das consultas, rej
 
 ## Reprodução das prévias
 
-A biblioteca e a demonstração usam um elemento de áudio com controles nativos e fixos, iniciando `play()` diretamente no clique, sem aguardar rede ou substituir o elemento. Se o navegador exigir outra interação, o player mostra uma mensagem para tocar no controle ▶. Os três exemplos locais têm volume normalizado. O service worker atende intervalos de bytes dos MP3 em cache com respostas 206 e não tenta armazenar respostas parciais.
+A biblioteca e a demonstração usam um elemento de áudio com controles nativos e fixos, iniciando `play()` diretamente no clique, sem aguardar rede ou substituir o elemento. Se o navegador exigir outra interação, o player mostra uma mensagem para tocar no controle ▶. Os áudios da biblioteca são servidos pelo Storage público. O service worker não intercepta os áudios do Supabase nem pedidos de intervalos de bytes; o player usa diretamente o servidor de mídia.
