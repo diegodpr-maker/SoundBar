@@ -13,3 +13,5 @@
 .pad{display:flex;flex-direction:column}.pad-trigger{flex:1;padding-bottom:18px;min-height:150px}.pad-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px;border-top:1px solid #ffffff18}.pad-actions .pad-delete,.pad-actions .pad-edit,.pad-drag{position:static;min-width:0;min-height:44px;margin:0}.pad-drag{touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;border:1px solid #415a45;border-radius:8px;background:#283c2c;color:#d9e6d9;font-size:25px}.pad.sorting{opacity:.6;outline:2px solid #b8f782}.pad.sort-target{outline:3px dashed #b8f782;outline-offset:3px}.pads[aria-busy=true] .pad-drag{opacity:.4;cursor:wait}body.event-mode .pad-trigger{min-height:160px}
 
 .pad-actions .pad-drag,.pad-actions .pad-edit{flex:0 0 44px}.pad-actions .pad-delete{flex:1 0 64px;padding:8px 4px}
+
+.library-upload-fields{border:0;padding:0;margin:0;min-width:0}.library-upload-fields:disabled{opacity:.65}#library-file-list{max-height:420px;overflow:auto}#library-file-list .field{padding:12px 0;border-bottom:1px solid var(--line)}
