@@ -1,6 +1,6 @@
 export let samples=[];
 const known=new Map();
-export function normalizeSample(row){return {id:row.id,name:row.name,category:row.category,author:row.author,credit:row.credit,license:row.license,licenseUrl:row.source_url||null,source:row.source_url||null,url:row.audio_url,filename:row.filename,mime:row.mime,duration:row.duration_seconds==null?'—':formatDuration(row.duration_seconds),active:row.active,file_size:Number(row.file_size||0)}}
+export function normalizeSample(row){return {id:row.id,name:row.name,category:row.category,author:row.author==='Biblioteca SoundBar'?'Biblioteca Sysmacom Harmony':row.author,credit:row.credit,license:row.license,licenseUrl:row.source_url||null,source:row.source_url||null,url:row.audio_url,filename:row.filename,mime:row.mime,duration:row.duration_seconds==null?'—':formatDuration(row.duration_seconds),active:row.active,file_size:Number(row.file_size||0)}}
 export function formatDuration(seconds){const n=Math.max(1,Math.round(Number(seconds)));return Math.floor(n/60)+':'+String(n%60).padStart(2,'0')}
 export function setSampleCatalog(rows){samples=rows.filter(r=>r.active).map(normalizeSample);for(const sample of samples)known.set(sample.id,sample);return samples}
 export async function loadCatalog(client){const {data,error}=await client.from('sb_library_tracks').select('*').eq('active',true).order('position').order('created_at');if(error)throw Error('Não foi possível carregar a biblioteca. Tente novamente.');return setSampleCatalog(data||[])}
