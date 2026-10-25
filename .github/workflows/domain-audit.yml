@@ -4,10 +4,37 @@ on:
     branches: [audit/custom-domain]
 permissions:
   contents: read
+  pages: write
 jobs:
   audit:
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Require HTTPS for the configured Harmony domain
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import urllib.request,json,os
+          url='https://api.github.com/repos/diegodpr-maker/SoundBar/pages'
+          headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}
+          def call(method,data=None):
+              request=urllib.request.Request(url,data=json.dumps(data).encode() if data is not None else None,headers=headers,method=method)
+              try:
+                  with urllib.request.urlopen(request,timeout=20) as response:
+                      content=response.read()
+                      return json.loads(content) if content else {}
+              except urllib.error.HTTPError as error:
+                  print('Pages API error:',error.code,error.read().decode()[:500])
+                  raise SystemExit(1)
+          current=call('GET')
+          assert current.get('cname')=='harmony.sysmacom.com.br', 'Unexpected domain; no settings changed'
+          print('Current HTTPS enforced:',current.get('https_enforced'))
+          if not current.get('https_enforced'):
+              call('PUT',{'https_enforced':True})
+          verified=call('GET')
+          print('Verified HTTPS enforced:',verified.get('https_enforced'))
+          assert verified.get('https_enforced') is True
+          PY
       - run: node tests/verify-domain-live.mjs
