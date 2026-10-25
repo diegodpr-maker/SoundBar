@@ -1,0 +1,13 @@
+name: Custom domain audit
+on:
+  push:
+    branches: [audit/custom-domain]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: node tests/verify-domain-live.mjs
