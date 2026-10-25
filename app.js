@@ -1,14 +1,14 @@
-import {createUploadLog} from './upload-log.js?v=30';
-import {prepareAudioUpload} from './audio-conversion.js?v=30';
-import {validateBackup} from './security-utils.js?v=30';
-import {initNavigation} from './app-navigation.js?v=30';
-import {uploadLibraryBatch,validateLibraryFiles,libraryFailureSummary,prepareLibraryFile} from './library-batch.js?v=30';
-import {attachTrackSort} from './track-sort.js?v=30';
-import {offlineAudio} from './offline-audio.js?v=30';
-import {createAudioPool} from './audio-pool.js?v=30';
-import {createPreviewPlayer,previewMessage} from './audio-preview.js?v=30';
-import {getBackend} from './backend.js?v=30';
-import {sampleUrl,downloadSample,saveBlob} from './samples.js?v=30';
+import {createUploadLog} from './upload-log.js?v=31';
+import {prepareAudioUpload} from './audio-conversion.js?v=31';
+import {validateBackup} from './security-utils.js?v=31';
+import {initNavigation} from './app-navigation.js?v=31';
+import {uploadLibraryBatch,validateLibraryFiles,libraryFailureSummary,prepareLibraryFile} from './library-batch.js?v=31';
+import {attachTrackSort} from './track-sort.js?v=31';
+import {offlineAudio} from './offline-audio.js?v=31';
+import {createAudioPool} from './audio-pool.js?v=31';
+import {createPreviewPlayer,previewMessage} from './audio-preview.js?v=31';
+import {getBackend} from './backend.js?v=31';
+import {sampleUrl,downloadSample,saveBlob} from './samples.js?v=31';
 'use strict';
 const $=s=>document.querySelector(s),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const state={me:null,overview:null,samples:[],board:null,route:'dashboard',search:'',category:'Todos',busy:false,accounts:[],libraryAdmin:[],contributions:[],pendingContributions:[]};
@@ -32,7 +32,7 @@ $('#preview-close').onclick=()=>stopPreview();
 function stopPreview(){samplePreview.stop()}
 function updatePreviewButtons(){for(const b of document.querySelectorAll('[data-action="preview"]')){const selected=preview?.id===b.dataset.id,playing=selected&&!sampleAudio.paused&&!sampleAudio.ended;b.setAttribute('aria-pressed',String(playing));b.textContent=selected&&samplePreview.current?.state==='loading'?'Carregando…':playing?'■ Parar':'▶ Ouvir'}}
 const bytes=x=>x<1024*1024?(x/1024).toFixed(0)+' KB':(x/1024/1024).toFixed(1)+' MB';
-function toast(message,error=false){clearTimeout(toastTimer);$('#toast').textContent=message;$('#toast').classList.toggle('error',error);$('#toast').hidden=false;toastTimer=setTimeout(()=>$('#toast').hidden=true,error?9000:4500)}
+function toast(message,error=false){if(error)globalThis.harmonyReportError?.('operation',new Error());clearTimeout(toastTimer);$('#toast').textContent=message;$('#toast').classList.toggle('error',error);$('#toast').hidden=false;toastTimer=setTimeout(()=>$('#toast').hidden=true,error?9000:4500)}
 async function api(path,options={}){try{return await (await getBackend()).call(path,options)}catch(e){if(e.status===401){stopAll();location.assign('login.html')}throw e}}
 function wave(seed=0){return '<div class="playlist-art">'+[20,36,48,30,58,40,26,44,32,17].map((h,i)=>`<i style="height:${Math.max(10,h-(seed%3)*4)}px"></i>`).join('')+'</div>'}
 function header(title,description,actions=''){return `<div class="page-head"><div><h1>${esc(title)}</h1><p>${esc(description)}</p></div><div class="actions">${actions}</div></div>`}

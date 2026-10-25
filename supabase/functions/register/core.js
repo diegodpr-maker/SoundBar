@@ -10,9 +10,10 @@ export function validateRegistration(value){
 export function registrationHandler({client,publicKey,anonKey,allowedOrigin,hash}){
  return async request=>{
  const origin=request.headers.get('origin');const headers={'Content-Type':'application/json','Cache-Control':'no-store','Vary':'Origin'};
- if(origin===allowedOrigin)Object.assign(headers,{'Access-Control-Allow-Origin':allowedOrigin,'Access-Control-Allow-Headers':'authorization, x-client-info, apikey, content-type','Access-Control-Allow-Methods':'POST, OPTIONS'});
- const reply=(body,status=200)=>new Response(JSON.stringify(body),{status,headers});
- if(origin!==allowedOrigin)return reply({error:'Origem não permitida.'},403);
+ const permitted=[allowedOrigin,'https://harmony.sysmacom.com.br'].includes(origin);
+ if(permitted)Object.assign(headers,{'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Headers':'authorization, x-client-info, apikey, content-type','Access-Control-Allow-Methods':'POST, OPTIONS'});
+ const reply=(body,status=200)=>{if(status>=400)console.error(JSON.stringify({event:'registration_failed',status,origin:permitted?origin:'untrusted'}));return new Response(JSON.stringify(body),{status,headers})};
+ if(!permitted)return reply({error:'Origem não permitida.'},403);
  if(request.method==='OPTIONS')return new Response(null,{status:204,headers});
  if(request.method!=='POST')return reply({error:'Método não permitido.'},405);
  if(![publicKey,anonKey].filter(Boolean).includes(request.headers.get('apikey')))return reply({error:'Aplicativo não autorizado.'},401);
