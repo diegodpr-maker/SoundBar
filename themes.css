@@ -431,3 +431,16 @@ body.event-mode .app-main{padding-bottom:76px}
 @media(max-width:800px){[data-theme="light"] .stat small{font-size:11px}[data-theme="light"] .stat .caption{font-size:11px}[data-theme="light"] .playlist-card p{font-size:13px}[data-theme="light"] .card-bottom{font-size:12px}}
 
 .contributions-panel{margin-bottom:32px}.contribution-consent{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.6;margin:16px 0}.contribution-consent input{width:20px;min-width:20px;height:20px;margin-top:2px;accent-color:var(--accent)}
+
+/* Account entry and review states share the product visual language. */
+.auth-card{border-radius:24px;box-shadow:0 16px 48px #07162b18}
+.auth-card #auth-description{line-height:1.65;max-width:38ch}
+.auth-card #auth-submit{width:100%;min-height:50px;margin-top:8px}
+.auth-card .fine{line-height:1.65}
+.auth-card .field input{min-height:48px;font-size:16px}
+.access-card{max-width:620px;padding:clamp(24px,5vw,40px)}
+.access-symbol{display:grid;place-items:center;width:60px;height:60px;border-radius:18px;margin-bottom:24px;background:color-mix(in srgb,var(--accent) 14%,var(--panel));color:var(--accent);font-size:32px}
+.access-card>p{line-height:1.7;max-width:48ch;overflow-wrap:anywhere}
+.access-card .actions{margin-top:28px;gap:12px}
+.access-card .actions .btn{min-height:48px}
+@media(max-width:480px){.access-card .actions{display:grid;grid-template-columns:1fr}.auth-card{padding:24px}.auth-card .actions{margin-top:16px}}

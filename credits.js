@@ -1,4 +1,4 @@
-import {loadPublicCatalog,downloadSample} from './samples.js?v=23';
+import {loadPublicCatalog,downloadSample} from './samples.js?v=24';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 (async()=>{try{const samples=await loadPublicCatalog();document.querySelector('#credits').innerHTML=samples.map(s=>`<article><h2>${esc(s.name)}</h2><p>${esc(s.credit||'Condições de uso não informadas.')}</p><p>${esc(s.license)}${s.source?` · <a href="${esc(s.source)}" target="_blank" rel="noopener">Fonte</a>`:''}</p><button class="btn" data-download="${s.id}">↓ Baixar áudio</button><p class="fine" role="status"></p></article>`).join('')}catch(error){document.querySelector('#credits').textContent=error.message}})();
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-download]');if(!b)return;b.disabled=true;try{await downloadSample(b.dataset.download)}catch(error){b.parentElement.querySelector('[role=status]').textContent=error.message}finally{b.disabled=false}});
