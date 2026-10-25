@@ -444,3 +444,5 @@ body.event-mode .app-main{padding-bottom:76px}
 .access-card .actions{margin-top:28px;gap:12px}
 .access-card .actions .btn{min-height:48px}
 @media(max-width:480px){.access-card .actions{display:grid;grid-template-columns:1fr}.auth-card{padding:24px}.auth-card .actions{margin-top:16px}}
+
+.session-loading{min-height:65dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 16px;gap:12px}.session-loading img{border-radius:20px;box-shadow:0 12px 36px #07162b25}.session-loading h1{font-size:24px;margin:12px 0 0;letter-spacing:-.6px}.session-loading p{color:var(--muted);font-size:15px;line-height:1.6;margin:0}.session-progress{width:120px;height:4px;border-radius:4px;background:color-mix(in srgb,var(--accent) 20%,var(--panel));overflow:hidden;margin-top:12px}.session-progress::after{content:"";display:block;width:45%;height:100%;background:var(--accent);border-radius:4px;animation:session-progress 1.2s ease-in-out infinite alternate}@keyframes session-progress{from{transform:translateX(0)}to{transform:translateX(125%)}}@media(prefers-reduced-motion:reduce){.session-progress::after{animation:none;width:100%}}
