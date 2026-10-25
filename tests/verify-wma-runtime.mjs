@@ -7,7 +7,7 @@ const require=createRequire(import.meta.url),factory=require(process.argv[2]);
 const wasmBinary=readFileSync(process.argv[3]);
 globalThis.importScripts=()=>{};
 let result;
-globalThis.self={createFFmpegCore:options=>factory({...options,wasmBinary}),postMessage:message=>{if(['done','error'].includes(message.type))result=message}};
+globalThis.self={location:{href:'file:///tmp/ffmpeg-core.cjs'},createFFmpegCore:async options=>{try{return await factory({...options,wasmBinary})}catch(error){console.error('Engine initialization:',error);throw error}},postMessage:message=>{if(['done','error'].includes(message.type))result=message}};
 await import('../wma-worker.js');
 for(const codec of ['wmav1','wmav2']){
  const input=readFileSync(new URL('./fixtures/tone-'+codec+'.wma.base64',import.meta.url),'utf8');
