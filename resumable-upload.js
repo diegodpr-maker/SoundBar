@@ -1,5 +1,5 @@
 // Upload URLs remain in memory only; no tokens or private filenames are persisted.
-export function createResumableUploader({client,bucket,config=globalThis.SOUNDBAR_CONFIG,loadTus=()=>import('https://esm.sh/tus-js-client@4.3.1'),timeout=180000}){
+export function createResumableUploader({client,bucket,config=globalThis.SOUNDBAR_CONFIG,loadTus=()=>import('https://esm.sh/tus-js-client@4.3.1/lib.esm/browser/index.js?bundle'),timeout=180000}){
  const pending=new Map();
  return async(path,bytes,{contentType,onProgress=()=>{}}={})=>{
   // Unit-test clients and intentionally unconfigured instances keep the SDK transport.
