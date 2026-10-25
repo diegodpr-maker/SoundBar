@@ -1,4 +1,4 @@
-import {normalizeUploadError} from './upload-error.js?v=32';
+import {normalizeUploadError} from './upload-error.js?v=33';
 import {inspectAudio,checkPlayable,verifyStoredAudio,withAudioTimeout} from './audio-validation.js?v=17';
 export function transientNetwork(error){const status=Number(error?.status||error?.statusCode||error?.code);return error?.retryable===true||[408,429].includes(status)||status>=500||/falha na conexão|networkerror|failed to fetch|fetch failed|network request|load failed|tempo esgotado|timeout/i.test(error?.message||'')}
 const pause=ms=>new Promise(r=>setTimeout(r,ms));

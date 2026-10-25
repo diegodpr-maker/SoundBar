@@ -1,5 +1,5 @@
-import {sampleUrl,sampleById,loadPublicCatalog} from './samples.js?v=32';
-import {createPreviewPlayer,previewMessage} from './audio-preview.js?v=32';
+import {sampleUrl,sampleById,loadPublicCatalog} from './samples.js?v=33';
+import {createPreviewPlayer,previewMessage} from './audio-preview.js?v=33';
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const audio=document.querySelector('#demo-audio');audio.volume=.85;
 const preview=createPreviewPlayer(audio,status=>{document.querySelector('#demo-player').hidden=!status;document.querySelector('#demo-status').textContent=status?previewMessage(status.state):'Toque em um botão para ouvir. Toque de novo para parar.';for(const b of document.querySelectorAll('[data-sample]')){const playing=status?.id===b.dataset.sample&&!audio.paused&&!audio.ended;b.setAttribute('aria-pressed',String(playing));b.querySelector('span').textContent=playing?'■':'▶'}});

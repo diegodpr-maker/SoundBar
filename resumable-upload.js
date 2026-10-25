@@ -1,4 +1,4 @@
-import {normalizeUploadError} from './upload-error.js?v=32';
+import {normalizeUploadError} from './upload-error.js?v=33';
 // Upload URLs remain in memory only; no tokens or private filenames are persisted.
 export function createResumableUploader({client,bucket,config=globalThis.SOUNDBAR_CONFIG,loadTus=()=>import('https://esm.sh/tus-js-client@4.3.1/lib.esm/browser/index.js?bundle'),timeout=180000}){
  const pending=new Map();

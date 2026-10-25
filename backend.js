@@ -1,12 +1,12 @@
-import {createResumableUploader} from './resumable-upload.js?v=32';
-import {inspectAudio,checkPlayable,verifyStoredAudio} from './audio-validation.js?v=32';
-import {createLibraryTransfer,retryRead,uploadStage,transientNetwork} from './upload-transfer.js?v=32';
-import {loadCatalog,resolveSample,sampleById,sampleUrl,sampleBlob,saveBlob} from './samples.js?v=32';
+import {createResumableUploader} from './resumable-upload.js?v=33';
+import {inspectAudio,checkPlayable,verifyStoredAudio} from './audio-validation.js?v=33';
+import {createLibraryTransfer,retryRead,uploadStage,transientNetwork} from './upload-transfer.js?v=33';
+import {loadCatalog,resolveSample,sampleById,sampleUrl,sampleBlob,saveBlob} from './samples.js?v=33';
 const BUCKET='soundbar-audio';export const MAX_FILE=25*1024*1024,MAX_STORAGE=200*1024*1024;
 export function validateConfig(config){const {supabaseUrl:url,supabaseKey:key}=config||{};if(!url||!key)throw Error('As contas estão aguardando a conexão com o Supabase. Você pode usar a versão local enquanto isso.');let parsed;try{parsed=new URL(url)}catch{throw Error('URL do Supabase inválida.')}if(parsed.protocol!=='https:'||!parsed.hostname.endsWith('.supabase.co')||parsed.pathname!=='/'||parsed.search||parsed.hash)throw Error('Use a URL HTTPS do projeto Supabase.');if(key.startsWith('sb_secret_'))throw Error('A chave secreta não pode ser usada neste site público.');if(!key.startsWith('sb_publishable_')){let role;try{role=JSON.parse(atob(key.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).role}catch{}if(role!=='anon')throw Error('Use somente a chave publicável ou anon do Supabase.')}return {url:parsed.origin,key};}
 function result(r){if(r.error){const error=r.error;if(['42P01','PGRST205'].includes(error.code))throw Error('O banco ainda precisa ser ativado no Supabase.');if(error.code==='42501')throw Error('Você não tem acesso a este recurso.');throw Object.assign(Error(error.message||'Não foi possível concluir.'),{code:error.code,status:error.status||error.statusCode})}return r.data}
 const text=(s,n=80)=>typeof s==='string'?s.trim().slice(0,n):'';
-export function createBackend(client){let cachedUser=null;client.auth.onAuthStateChange?.((event)=>{if(event==='SIGNED_OUT'||event==='USER_UPDATED'||event==='SIGNED_IN')cachedUser=null});
+export function createBackend(client){const sharedJobs=new Map();let cachedUser=null;client.auth.onAuthStateChange?.((event)=>{if(event==='SIGNED_OUT'||event==='USER_UPDATED'||event==='SIGNED_IN')cachedUser=null});
  async function user(){if(!cachedUser){const r=await client.auth.getUser();if(r.error||!r.data?.user)throw Object.assign(Error('Entre para acessar seu estúdio.'),{status:401});cachedUser=r.data.user}return cachedUser}
  async function accessState(){await user();return result(await client.rpc('sb_account_state'))}
  async function assertApproved(){const access=await accessState();if(access.status!=='approved')throw Object.assign(Error(access.status==='blocked'?'Sua conta está bloqueada. Fale com o administrador.':'Sua conta aguarda liberação do administrador.'),{status:403,accountStatus:access.status});return access}
@@ -28,6 +28,30 @@ export function createBackend(client){let cachedUser=null;client.auth.onAuthStat
  if(p==='/access')return accessState();
  if(p==='/me'){const access=await accessState();const data=access.status==='approved'?await profile():{id:u.id,email:u.email,display_name:text(u.user_metadata?.display_name)||text(u.email?.split('@')[0])||'Meu perfil'};return {profile:data,workspace:{id:u.id,name:data.workspace_name||'Meu estúdio'},access,limits:{file:MAX_FILE,storage:MAX_STORAGE}}}
  const access=await (p==='/admin/library'&&method==='POST'?uploadStage('Verificação da conta',()=>retryRead(()=>assertApproved())):assertApproved());
+ if(p==='/community')return result(await client.rpc('sb_browse_playlists'));
+ const shared=/^\/shared\/([0-9a-f-]{36})(\/import)?$/.exec(p);
+ if(shared){const token=shared[1];
+ if(method==='GET')return result(await client.rpc('sb_get_shared_playlist',{share_token:token}));
+ if(shared[2]&&method==='POST'){
+ const key=u.id+'/'+token;let job=sharedJobs.get(key);
+ const receipt=async share=>result(await client.from('sb_playlist_imports').select('playlist_id').eq('share_id',share).eq('user_id',u.id).maybeSingle());
+ if(job){const prior=await receipt(job.doc.share_id);if(prior)return{playlist_id:prior.playlist_id}}
+ const doc=result(await client.rpc('sb_get_shared_playlist',{share_token:token}));const prior=await receipt(doc.share_id);if(prior)return{playlist_id:prior.playlist_id};
+ if(job&&job.doc.revision!==doc.revision){await client.storage.from(BUCKET).remove(job.paths);sharedJobs.delete(key);job=null}
+ if(!job){job={doc,target:crypto.randomUUID(),paths:[],mapping:doc.tracks.map(t=>({source_id:t.id,dest_id:crypto.randomUUID()}))};sharedJobs.set(key,job)}
+ if(job.busy)throw Error('Esta playlist já está sendo importada.');job.busy=true;
+ try{
+ for(let i=0;i<doc.tracks.length;i++){const t=doc.tracks[i];if(!t.audio_path)continue;const dest=u.id+'/'+job.mapping[i].dest_id+'.'+t.audio_path.split('.').pop();if(!job.paths.includes(dest))job.paths.push(dest);options.onUploadStage?.(`Copiando áudios: ${i+1}/${doc.tracks.length}`);
+ await retryRead(async()=>{const copied=await client.storage.from(BUCKET).copy(t.audio_path,dest);if(copied.error&&(/already.?exists|duplicate/i.test(copied.error.message||'')||Number(copied.error.statusCode)===409))return;result(copied)})
+ }
+ const id=result(await client.rpc('sb_import_shared_playlist',{share_token:token,revision:doc.revision,target:job.target,mapping:job.mapping}));
+ if(id!==job.target&&job.paths.length)await client.storage.from(BUCKET).remove(job.paths);sharedJobs.delete(key);return{playlist_id:id};
+ }catch(error){let confirmed;try{confirmed=await receipt(doc.share_id)}catch{throw Error('Não foi possível confirmar a importação. Tente novamente.')}if(confirmed){if(confirmed.playlist_id!==job.target&&job.paths.length)await client.storage.from(BUCKET).remove(job.paths);sharedJobs.delete(key);return{playlist_id:confirmed.playlist_id}}if(!transientNetwork(error)){if(job.paths.length)await client.storage.from(BUCKET).remove(job.paths);sharedJobs.delete(key)}throw error
+ }finally{job.busy=false}
+ }
+ }
+ const shareOwner=/^\/playlists\/([^/]+)\/share$/.exec(p);
+ if(shareOwner){await playlist(shareOwner[1]);if(method==='GET')return result(await client.from('sb_playlist_shares').select('*').eq('playlist_id',shareOwner[1]).eq('user_id',u.id).maybeSingle());return result(await client.rpc('sb_set_playlist_share',{target:shareOwner[1],enable:method!=='DELETE',consent:b.consent===true}))}
  if(p==='/contributions')return result(await client.from('sb_library_submissions').select('*').eq('user_id',u.id).order('created_at',{ascending:false}));
  const contribution=/^\/tracks\/([^/]+)\/contribute$/.exec(p);
  if(contribution&&method==='POST'){

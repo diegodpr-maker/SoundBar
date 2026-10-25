@@ -1,5 +1,5 @@
-import {prepareAudioUpload} from './audio-conversion.js?v=32';
-import {inspectAudio} from './audio-validation.js?v=32';
+import {prepareAudioUpload} from './audio-conversion.js?v=33';
+import {inspectAudio} from './audio-validation.js?v=33';
 export function validateLibraryFiles(entries){if(entries.length>300)throw Error('Selecione até 300 áudios por lote.');if(!entries.length)throw Error('Selecione um ou mais áudios.');for(const entry of entries){if(!entry.name.trim()||entry.name.trim().length>120)throw Error('Informe um nome de até 120 caracteres para '+entry.file.name);if(!/\.(mp3|wav|ogg|m4a|aac|flac|webm|wma)$/i.test(entry.file.name))throw Error('Formato não reconhecido: '+entry.file.name);if(!entry.file.size||entry.file.size>50*1024*1024)throw Error('Cada áudio deve ter até 50 MB: '+entry.file.name)}}
 export async function uploadLibraryBatch(entries,{upload,onProgress=()=>{},onResult=()=>{}}){validateLibraryFiles(entries);for(let i=0;i<entries.length;i++){const entry=entries[i];if(entry.status==='done')continue;onProgress(i+1,entries.length,entry);try{const result=await upload(entry);entry.status='done';entry.error='';try{onResult(entry,i,null,result)}catch{}}catch(error){entry.status='failed';entry.error=error.message||'Falha no envio';try{onResult(entry,i,error)}catch{}}}return{done:entries.filter(e=>e.status==='done').length,failed:entries.filter(e=>e.status==='failed').length}}
 
