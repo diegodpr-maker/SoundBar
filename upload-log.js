@@ -1,4 +1,4 @@
-const VERSION='29',MAX_BATCHES=20,MAX_FILES=300;
+const VERSION='30',MAX_BATCHES=20,MAX_FILES=300;
 const clean=value=>String(value??'').replace(/https?:\/\/[^\s)]+/gi,'[endereço omitido]').replace(/Bearer\s+\S+|\beyJ[\w-]+\.[\w-]+\.[\w-]+|\bsb_(?:secret|publishable)_[\w-]+/gi,'[credencial omitida]').replace(/[\x00-\x1f\x7f]/g,' ').slice(0,500);
 export function createUploadLog({owner,storage,now=()=>new Date().toISOString(),id=()=>crypto.randomUUID()}={}){
  if(!owner)throw Error('Conta necessária para consultar o histórico.');
