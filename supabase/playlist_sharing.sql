@@ -40,7 +40,7 @@ begin
  return doc||jsonb_build_object('revision',md5(doc::text));
 end $$;
 create function soundbar_private.sb_import_shared_playlist(share_token uuid,revision text,target uuid,mapping jsonb) returns uuid language plpgsql security definer set search_path='' as $$
-declare doc jsonb; s uuid; existing uuid; item jsonb; dest jsonb; p jsonb; dest_id uuid; path text; sz bigint;
+declare doc jsonb; s uuid; existing uuid; item jsonb; dest jsonb; p jsonb; dest_id uuid; path text; sz bigint; seq integer:=0;
 begin
  if not soundbar_private.sb_is_approved() then raise exception 'Sua conta precisa estar liberada.';end if;
  perform 1 from public.sb_profiles where id=auth.uid() for update;
@@ -59,7 +59,7 @@ begin
  path:=auth.uid()::text||'/'||dest_id::text||'.'||substring(item->>'audio_path' from '[^.]+$');
  if not exists(select 1 from storage.objects where bucket_id='soundbar-audio' and name=path and (metadata->>'size')::bigint=(item->>'file_size')::bigint) then raise exception 'Não foi possível confirmar um áudio copiado.';end if;
  end if;
- insert into public.sb_tracks(id,user_id,playlist_id,name,color,sample_id,audio_path,filename,mime,file_size,position) values(dest_id,auth.uid(),target,item->>'name',item->>'color',item->>'sample_id',path,item->>'filename',item->>'mime',(item->>'file_size')::bigint,(item->>'position')::integer);
+ insert into public.sb_tracks(id,user_id,playlist_id,name,color,sample_id,audio_path,filename,mime,file_size,position) values(dest_id,auth.uid(),target,item->>'name',item->>'color',item->>'sample_id',path,item->>'filename',item->>'mime',(item->>'file_size')::bigint,seq);seq:=seq+1;
  end loop;
  insert into public.sb_playlist_imports values(s,auth.uid(),target);return target;
 end $$;
