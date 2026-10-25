@@ -24,3 +24,8 @@ jobs:
           curl --fail --retry 2 --max-time 180 -o /tmp/ffmpeg-core.wasm https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.wasm
       - name: Convert actual WMA files and decode resulting MP3
         run: node tests/verify-wma-runtime.mjs /tmp/ffmpeg-core.cjs /tmp/ffmpeg-core.wasm
+      - name: Verify actual browser worker and native playback under app CSP
+        run: |
+          npm install --prefix /tmp/harmony-browser --ignore-scripts --no-audit --no-fund playwright@1.56.1
+          node /tmp/harmony-browser/node_modules/playwright/cli.js install chromium --with-deps
+          node tests/verify-wma-browser.mjs /tmp/harmony-browser/node_modules/playwright
