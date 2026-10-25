@@ -1,0 +1,11 @@
+name: Storage HTTP audit
+on:
+  push:
+    branches: [audit/storage-http]
+permissions: {}
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - run: curl --fail --max-time 60 https://fcmsojjtkiehsobbkjnr.supabase.co/functions/v1/soundbar-upload-audit
