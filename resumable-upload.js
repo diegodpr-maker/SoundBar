@@ -1,3 +1,4 @@
+import {normalizeUploadError} from './upload-error.js?v=32';
 // Upload URLs remain in memory only; no tokens or private filenames are persisted.
 export function createResumableUploader({client,bucket,config=globalThis.SOUNDBAR_CONFIG,loadTus=()=>import('https://esm.sh/tus-js-client@4.3.1/lib.esm/browser/index.js?bundle'),timeout=180000}){
  const pending=new Map();
@@ -10,7 +11,7 @@ export function createResumableUploader({client,bucket,config=globalThis.SOUNDBA
   const endpoint=base.origin+'/storage/v1/upload/resumable';
   const current=await client.auth.getSession();if(current.error)throw current.error;const session=current.data?.session;if(!session?.access_token)throw Object.assign(Error('Sua sessão terminou. Entre novamente.'),{status:401});
   const key=session.user.id+'/'+bucket+'/'+path,{Upload}=await loadTus();
-  return new Promise((resolve,reject)=>{let settled=false,upload;const finish=(error)=>{if(settled)return;settled=true;clearTimeout(timer);if(error)reject(error);else{pending.delete(key);resolve({data:{path}})}};
+  return new Promise((resolve,reject)=>{let settled=false,upload;const finish=(error)=>{if(settled)return;settled=true;clearTimeout(timer);if(error)reject(normalizeUploadError(error));else{pending.delete(key);resolve({data:{path}})}};
    const timer=setTimeout(()=>{if(upload?.url)pending.set(key,upload.url);upload?.abort().catch(()=>{});finish(Error('Tempo esgotado ao enviar. Tente novamente; a conversão será reaproveitada.'))},timeout);
    try{upload=new Upload(new Blob([bytes],{type:contentType}),{
     endpoint,uploadUrl:pending.get(key)||undefined,
