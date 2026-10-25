@@ -6,6 +6,9 @@ on:
       - 'audio-conversion.js'
       - 'wma-worker.js'
       - 'library-batch.js'
+      - 'resumable-upload.js'
+      - 'upload-transfer.js'
+      - 'backend.js'
       - 'tests/**'
       - '.github/workflows/wma-conversion.yml'
   workflow_dispatch:
@@ -29,3 +32,4 @@ jobs:
           npm install --prefix /tmp/harmony-browser --ignore-scripts --no-audit --no-fund playwright@1.56.1
           node /tmp/harmony-browser/node_modules/playwright/cli.js install chromium --with-deps
           node tests/verify-wma-browser.mjs /tmp/harmony-browser/node_modules/playwright
+          node tests/verify-resumable-browser.mjs /tmp/harmony-browser/node_modules/playwright

@@ -1,6 +1,7 @@
-import {inspectAudio,checkPlayable,verifyStoredAudio} from './audio-validation.js?v=26';
-import {createLibraryTransfer,retryRead,uploadStage,transientNetwork} from './upload-transfer.js?v=26';
-import {loadCatalog,resolveSample,sampleById,sampleUrl,sampleBlob,saveBlob} from './samples.js?v=26';
+import {createResumableUploader} from './resumable-upload.js?v=27';
+import {inspectAudio,checkPlayable,verifyStoredAudio} from './audio-validation.js?v=27';
+import {createLibraryTransfer,retryRead,uploadStage,transientNetwork} from './upload-transfer.js?v=27';
+import {loadCatalog,resolveSample,sampleById,sampleUrl,sampleBlob,saveBlob} from './samples.js?v=27';
 const BUCKET='soundbar-audio';export const MAX_FILE=25*1024*1024,MAX_STORAGE=200*1024*1024;
 export function validateConfig(config){const {supabaseUrl:url,supabaseKey:key}=config||{};if(!url||!key)throw Error('As contas estão aguardando a conexão com o Supabase. Você pode usar a versão local enquanto isso.');let parsed;try{parsed=new URL(url)}catch{throw Error('URL do Supabase inválida.')}if(parsed.protocol!=='https:'||!parsed.hostname.endsWith('.supabase.co')||parsed.pathname!=='/'||parsed.search||parsed.hash)throw Error('Use a URL HTTPS do projeto Supabase.');if(key.startsWith('sb_secret_'))throw Error('A chave secreta não pode ser usada neste site público.');if(!key.startsWith('sb_publishable_')){let role;try{role=JSON.parse(atob(key.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).role}catch{}if(role!=='anon')throw Error('Use somente a chave publicável ou anon do Supabase.')}return {url:parsed.origin,key};}
 function result(r){if(r.error){const error=r.error;if(['42P01','PGRST205'].includes(error.code))throw Error('O banco ainda precisa ser ativado no Supabase.');if(error.code==='42501')throw Error('Você não tem acesso a este recurso.');throw Object.assign(Error(error.message||'Não foi possível concluir.'),{code:error.code,status:error.status||error.statusCode})}return r.data}
@@ -19,7 +20,8 @@ export function createBackend(client){let cachedUser=null;client.auth.onAuthStat
  async function blobForTrack(id){await assertApproved();const t=await track(id);if(t.sample_id)await resolveSample(t.sample_id,client);return {track:t,blob:t.sample_id?await sampleBlob(t.sample_id):result(await client.storage.from(BUCKET).download(t.audio_path))}}
  async function downloadTrack(id){const {track:t,blob}=await blobForTrack(id);saveBlob(blob,t.filename||(t.sample_id?sampleById(t.sample_id).filename:t.name))}
  async function removeTracks(tracks){const u=await user(),paths=tracks.map(t=>t.audio_path).filter(Boolean);if(paths.length)result(await client.storage.from(BUCKET).remove(paths));if(tracks.length)result(await client.from('sb_tracks').delete().in('id',tracks.map(t=>t.id)).eq('user_id',u.id));}
- const transferLibrary=createLibraryTransfer({storage:client.storage.from('soundbar-library'),unwrap:result,find:async id=>result(await client.from('sb_library_tracks').select('*').eq('id',id).maybeSingle()),insert:async row=>result(await client.from('sb_library_tracks').insert(row).select().single())});
+ const uploadLibrary=createResumableUploader({client,bucket:'soundbar-library'});
+ const transferLibrary=createLibraryTransfer({upload:uploadLibrary,uploadTimeout:240000,storage:client.storage.from('soundbar-library'),unwrap:result,find:async id=>result(await client.from('sb_library_tracks').select('*').eq('id',id).maybeSingle()),insert:async row=>result(await client.from('sb_library_tracks').insert(row).select().single())});
  async function call(path,options={}){const method=options.method||'GET',b=options.body||{},url=new URL(path,'https://soundbar.local'),p=url.pathname;
  if(p==='/samples')return loadCatalog(client);
  const u=await user();
@@ -50,7 +52,7 @@ export function createBackend(client){let cachedUser=null;client.auth.onAuthStat
  if(submission.status!=='pending')return{ok:true,status:submission.status};
  if(b.status==='approved'){
  const already=result(await client.from('sb_library_tracks').select('*').eq('id',submission.id).maybeSingle());
- if(already&&already.object_path!=='custom/'+submission.id+'.'+submission.filename.split('.').pop().toLowerCase())throw Error('O cadastro existente não corresponde à contribuição.');if(!already){const blob=result(await client.storage.from('soundbar-submissions').download(submission.object_path));const transfer=createLibraryTransfer({storage:client.storage.from('soundbar-library'),unwrap:result,find:async id=>result(await client.from('sb_library_tracks').select('*').eq('id',id).maybeSingle()),insert:async row=>result(await client.from('sb_library_tracks').insert(row).select().single()),makeId:()=>submission.id});
+ if(already&&already.object_path!=='custom/'+submission.id+'.'+submission.filename.split('.').pop().toLowerCase())throw Error('O cadastro existente não corresponde à contribuição.');if(!already){const blob=result(await client.storage.from('soundbar-submissions').download(submission.object_path));const transfer=createLibraryTransfer({upload:uploadLibrary,uploadTimeout:240000,storage:client.storage.from('soundbar-library'),unwrap:result,find:async id=>result(await client.from('sb_library_tracks').select('*').eq('id',id).maybeSingle()),insert:async row=>result(await client.from('sb_library_tracks').insert(row).select().single()),makeId:()=>submission.id});
  await transfer(blob,{filename:submission.filename,metadata:{name:text(b.name,120)||submission.name,category:text(b.category,60)||submission.category,author:submission.author,credit:submission.credit,license:submission.license,source_url:submission.source_url}})}
  }
  result(await client.rpc('sb_review_submission',{target_submission:submission.id,new_status:b.status,published_id:b.status==='approved'?submission.id:null}));try{await retryRead(async()=>result(await client.storage.from('soundbar-submissions').remove([submission.object_path])))}catch{}return{ok:true};

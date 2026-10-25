@@ -1,4 +1,4 @@
-const CACHE='sysmacom-harmony-pages-v26';
+const CACHE='sysmacom-harmony-pages-v27';
 const FILES=['./','./index.html','./local.html','./local.js','./security-utils.js','./audio-conversion.js','./audio-validation.js','./wma-worker.js','./style.css','./themes.css','./theme.js','./pwa-entry.js','./landing.js','./samples.js','./audio-preview.js','./audio-pool.js','./harmony-icon-192.png','./harmony-icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{for(const key of await caches.keys())if((key.startsWith('sounddeck-')||key.startsWith('soundbar-')||key.startsWith('sysmacom-harmony-'))&&key!==CACHE)await caches.delete(key);await self.clients.claim()})())});

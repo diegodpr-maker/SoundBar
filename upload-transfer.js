@@ -1,10 +1,10 @@
-import {inspectAudio,checkPlayable,verifyStoredAudio,withAudioTimeout} from './audio-validation.js?v=16';
-export function transientNetwork(error){const status=Number(error?.status||error?.statusCode||error?.code);return [408,429].includes(status)||status>=500||/networkerror|failed to fetch|fetch failed|network request|load failed|tempo esgotado|timeout/i.test(error?.message||'')}
+import {inspectAudio,checkPlayable,verifyStoredAudio,withAudioTimeout} from './audio-validation.js?v=17';
+export function transientNetwork(error){const status=Number(error?.status||error?.statusCode||error?.code);return [408,429].includes(status)||status>=500||/falha na conexão|networkerror|failed to fetch|fetch failed|network request|load failed|tempo esgotado|timeout/i.test(error?.message||'')}
 const pause=ms=>new Promise(r=>setTimeout(r,ms));
 export async function retryRead(task,{wait=pause,attempts=3}={}){for(let i=0;;i++){try{return await task()}catch(error){if(i>=attempts-1||!transientNetwork(error))throw error;await wait(500*2**i)}}}
 export async function uploadStage(label,task){try{return await task()}catch(cause){const e=new Error(`${label}: ${cause.message||cause}`);e.cause=cause;e.stage=label;e.retryable=transientNetwork(cause);throw e}}
 // One stable identifier per selected Blob. Never remove media on an ambiguous commit.
-export function createLibraryTransfer({storage,find,insert,unwrap,wait=pause,makeId=()=>crypto.randomUUID(),canDecode=typeof Audio!=='undefined'}){
+export function createLibraryTransfer({storage,find,insert,unwrap,wait=pause,makeId=()=>crypto.randomUUID(),canDecode=typeof Audio!=='undefined',upload=storage.upload.bind(storage),uploadTimeout=120000}){
  const jobs=new WeakMap();
  return async function transfer(blob,{filename,metadata,onProgress=()=>{}}){
   let job=jobs.get(blob);if(!job){const id=makeId();job={id,path:'custom/'+id+'.'+filename.split('.').pop().toLowerCase()};jobs.set(blob,job)}
@@ -24,7 +24,7 @@ export function createLibraryTransfer({storage,find,insert,unwrap,wait=pause,mak
   await stage('Envio ao armazenamento',async()=>{
    for(let attempt=0;!job.stored;attempt++){
     if(job.uncertain){try{await verifyStoredAudio(snapshot,await loadStored());job.stored=true;break}catch(error){if(!isMissing(error))throw error;job.uncertain=false}}
-    try{unwrap(await withAudioTimeout(storage.upload(job.path,bytes,{contentType:mime,upsert:false}),120000,'Tempo esgotado ao enviar o áudio. Tente novamente.'));job.stored=true}
+    try{unwrap(await withAudioTimeout(upload(job.path,bytes,{contentType:mime,upsert:false,onProgress:percent=>onProgress('Enviando áudio… '+percent+'%')}),uploadTimeout,'Tempo esgotado ao enviar o áudio. Tente novamente.'));job.stored=true}
     catch(error){const duplicate=Number(error.status||error.statusCode)===409||/already exists|duplicate/i.test(error.message||'');if(!transientNetwork(error)&&!duplicate)throw error;job.uncertain=true;if(attempt>=2)throw error;await wait(500*2**attempt)}
    }
   });
