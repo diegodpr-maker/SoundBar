@@ -126,3 +126,8 @@ Revogar remove a seleção da comunidade e bloqueia novas leituras dos arquivos 
 ### Posição das novas faixas
 
 Aplicar `supabase/append_tracks.sql` (migração `append_new_playlist_tracks`). O trigger de INSERT calcula MAX(position) + 1 sob bloqueio da playlist, com o mesmo bloqueio usado pela reordenação. Uploads, inclusões da biblioteca e importações entram no fim; a ordem existente não é reescrita. A função é SECURITY INVOKER, respeita RLS e verifica o dono autenticado. O teste `supabase/tests/append_tracks.sql` verifica inclusões em lote, reordenação, exclusões com lacunas, posição antiga enviada pelo cliente e isolamento entre contas, com ROLLBACK.
+
+
+### Arraste livre de faixas
+
+O arraste pela alça mostra uma cópia semitransparente do card e abre espaço na grade antes de soltar. A posição é escolhida pelo centro do card arrastado e pela proximidade dos cards, incluindo os vãos da grade. A prévia usa apenas a ordem visual; grava uma única vez ao soltar e restaura a ordem ao cancelar, sair da área, trocar de tela ou perder o foco. Há rolagem automática nas bordas, animação de deslocamento que respeita movimento reduzido e navegação por setas do teclado. O teste de navegador cobre mouse e eventos de toque Android reais via CDP, sob a CSP do app.

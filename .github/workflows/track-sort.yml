@@ -1,0 +1,27 @@
+name: Fluid playlist drag verification
+on:
+  push:
+    branches: [main, feature/fluid-track-sort]
+    paths:
+      - 'track-sort.js'
+      - 'style.css'
+      - 'tests/track-sort.test.mjs'
+      - 'tests/verify-track-sort-browser.mjs'
+      - '.github/workflows/track-sort.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: npm test && npm run check && node --check track-sort.js
+      - name: Install browser driver
+        run: npm install --prefix /tmp/harmony-browser --ignore-scripts --no-audit --no-fund playwright@1.56.1
+      - name: Install Chromium
+        run: node /tmp/harmony-browser/node_modules/playwright/cli.js install chromium
+      - name: Verify mouse and Android touch drag
+        timeout-minutes: 2
+        run: node tests/verify-track-sort-browser.mjs /tmp/harmony-browser/node_modules/playwright

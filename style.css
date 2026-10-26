@@ -14,6 +14,8 @@
 
 .pad-actions .pad-drag,.pad-actions .pad-edit{flex:0 0 44px}.pad-actions .pad-delete{flex:1 0 64px;padding:8px 4px}
 
+.pads.sort-active{user-select:none;-webkit-user-select:none}.pads.sort-active .pad-drag{cursor:grabbing}.pad.sorting{opacity:.2;outline:2px dashed var(--accent);outline-offset:3px}.pad.drag-ghost{position:fixed;top:0;left:0;margin:0;z-index:1100;box-sizing:border-box;opacity:.8;pointer-events:none;user-select:none;-webkit-user-select:none;transition:none;will-change:transform;outline:2px solid var(--accent);box-shadow:0 20px 52px #07162b66;transform-origin:center}.pad.drag-ghost .pad-drag{cursor:grabbing}
+
 .library-upload-fields{border:0;padding:0;margin:0;min-width:0}.library-upload-fields:disabled{opacity:.65}#library-file-list{max-height:420px;overflow:auto}#library-file-list .field{padding:12px 0;border-bottom:1px solid var(--line)}
 
 .upload-diagnostics{padding:18px;margin-bottom:20px;border:1px solid var(--color-b56871);border-radius:12px;background:var(--color-391e26);color:var(--color-ffdae0);overflow-wrap:anywhere}.upload-diagnostics p{margin:10px 0 0;font-size:14px}.upload-diagnostics strong{display:block}#library-upload-status{white-space:pre-wrap;overflow-wrap:anywhere}
