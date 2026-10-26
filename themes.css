@@ -409,6 +409,15 @@ body.event-mode .theme-control{display:none!important}
 body.event-mode .menu-toggle{display:none!important}
 body.event-mode .app-main{padding-bottom:76px}
 
+.event-pause{display:none}
+body.event-mode .transport{display:grid;grid-template-columns:minmax(100px,1fr) minmax(130px,190px) auto auto auto;gap:8px;left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));bottom:max(10px,env(safe-area-inset-bottom));min-height:0;padding:12px;border:1px solid var(--line);border-radius:18px;background:var(--panel);box-shadow:0 12px 40px #07162b30;z-index:100}
+body.event-mode .transport .nowplaying{min-width:0;flex-basis:auto}body.event-mode .transport .nowplaying strong{font-size:14px}body.event-mode .transport .nowplaying small{display:block;margin-top:4px;font-size:11px}
+body.event-mode .transport .volume{order:0;width:auto;gap:8px;min-width:0}body.event-mode .transport .volume input{width:80px;max-width:none;min-width:40px;flex:1;min-height:44px}body.event-mode .transport .volume label{font-size:11px}body.event-mode .transport .volume span{min-width:30px;text-align:right}
+body.event-mode .transport .btn{display:inline-flex;position:static;min-height:44px;padding:8px 10px;font-size:12px;white-space:nowrap}
+body.event-mode .app-main,body.event-mode.transport-open .app-main{padding-bottom:calc(var(--event-transport-height,100px) + 34px + env(safe-area-inset-bottom))}
+body.event-mode .toast{bottom:calc(var(--event-transport-height,100px) + 30px + env(safe-area-inset-bottom))}
+@media(max-width:620px){body.event-mode .transport{grid-template-columns:1fr auto auto}body.event-mode .transport .nowplaying,body.event-mode .transport .volume{grid-column:1/-1}body.event-mode .transport .volume input{width:auto}}
+
 [data-app-entry="true"] .auth>div:first-child,[data-app-entry="true"] .nav>a.fine{display:none}[data-app-entry="true"] .auth{display:block;max-width:480px;margin:0 auto;padding-top:28px;min-height:auto}[data-app-entry="true"] .auth-card{margin-bottom:32px}[data-app-entry="true"] .nav{justify-content:space-between}[data-app-entry="true"] .site-footer{display:none}
 /* Light mode uses explicit accessible surfaces rather than inverted dark colors. */
 [data-theme="light"]{--bg:#edf3fa;--panel:#ffffff;--line:#9aadc5;--text:#10233f;--muted:#425773;--accent:#1758c7;--harmony-accent:#1758c7;--harmony-panel:#ffffff;--harmony-ink:#10233f;--harmony-line:#7088a6;background:#edf3fa;color:#10233f}

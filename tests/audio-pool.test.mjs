@@ -9,3 +9,9 @@ test('preload size budget falls back to streaming for large files',async()=>{let
 test('download failure enables native preload instead of leaving the audio unprepared',async()=>{const p=createAudioPool({makeAudio:()=>new AudioMock(),fetcher:async()=>{throw Error('offline')}});p.prepare([{id:'a',url:'remote',size:5}]);await tick();assert.equal(p.get('a').audio.preload,'auto');assert.equal(p.get('a').audio.calls,1)});
 
 test('a late download cannot restore private media after logout',async()=>{let finish;let urls=0;const p=createAudioPool({makeAudio:()=>new AudioMock(),fetcher:()=>new Promise(r=>finish=r),makeURL:()=>{urls++;return 'blob:late'}});p.prepare([{id:'private',url:'signed',size:5}]);p.clear();finish({ok:true,blob:async()=>new Blob(['audio'])});await tick();assert.equal(p.get('private'),undefined);assert.equal(urls,0)});
+test('paused selections retain their source and position across playlist rendering, but clear on logout',()=>{
+ const retained=new Set(),p=createAudioPool({makeAudio:()=>new AudioMock(),isRetained:a=>retained.has(a)});
+ p.prepare([{id:'a',url:'one'}]);const first=p.get('a').audio;first.currentTime=9;retained.add(first);
+ p.prepare([{id:'b',url:'two'}]);assert.equal(p.get('a').audio,first);assert.equal(first.src,'one');assert.equal(first.currentTime,9);
+ p.prepare([{id:'a',url:'one'}]);first.ready();assert.deepEqual(p.stats(),{ready:1,total:1});p.clear();assert.equal(p.get('a'),undefined);assert.equal(first.src,'');
+});
