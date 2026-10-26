@@ -51,7 +51,8 @@ begin
  select * into sub from soundbar_private.sb_push_subscriptions s where s.endpoint=v_endpoint;
  if found and sub.user_id<>auth.uid() then raise exception 'Desative as notificações da outra conta neste aparelho.';end if;
  if sub.id is null and (select count(*) from soundbar_private.sb_push_subscriptions where user_id=auth.uid())>=5 then raise exception 'Desative as notificações em outro aparelho antes de adicionar este.';end if;
- insert into soundbar_private.sb_push_subscriptions(user_id,endpoint,p256dh,auth) values(auth.uid(),v_endpoint,data->>'p256dh',data->>'auth') on conflict(endpoint) do update set p256dh=excluded.p256dh,auth=excluded.auth;
+ insert into soundbar_private.sb_push_subscriptions(user_id,endpoint,p256dh,auth) values(auth.uid(),v_endpoint,data->>'p256dh',data->>'auth') on conflict(endpoint) do update set p256dh=excluded.p256dh,auth=excluded.auth where sb_push_subscriptions.user_id=auth.uid();
+ if not found then raise exception 'Desative as notificações da outra conta neste aparelho.';end if;
  return '{"enabled":true}'::jsonb;
  elsif action='unsubscribe' then
  delete from soundbar_private.sb_push_subscriptions s where s.endpoint=v_endpoint and s.user_id=auth.uid();return '{"enabled":false}'::jsonb;

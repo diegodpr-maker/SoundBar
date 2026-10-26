@@ -7,7 +7,7 @@ const sub={id:'subscription',endpoint,p256dh:receiver.getPublicKey().toString('b
 let decrypted,records=0;
 const worker=createDispatcher({rpc:async(action,data)=>{if(action==='claim')return{data:[{id:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',lease:'lease',kind:'signup',subscriptions:[sub]}]};if(action==='record'){assert.equal(data.status,201);records++}return{data:{}}},generateKeys:()=>sender,requestDetails:(...args)=>webpush.generateRequestDetails(...args),fetch:async(url,options)=>{
  assert.equal(url,endpoint);assert.equal(options.redirect,'error');assert.equal(options.headers['Content-Encoding'],'aes128gcm');
- decrypted=JSON.parse(ece.decrypt(Buffer.from(options.body),{version:'aes128gcm',privateKey:receiver.getPrivateKey(),authSecret:auth}).toString());
+ decrypted=JSON.parse(ece.decrypt(Buffer.from(options.body),{version:'aes128gcm',privateKey:receiver,authSecret:auth}).toString());
  assert.equal(decrypted.type,'harmony-new-account');return new Response('',{status:201});
 }});
 assert.deepEqual(await worker.dispatch(sender),{processed:1,accepted:1});assert.equal(records,1);assert.equal(decrypted.id,'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');console.log('Pinned web-push library: VAPID signing, AES128GCM encryption, recipient decryption and private signup payload passed; no external notification sent.');
