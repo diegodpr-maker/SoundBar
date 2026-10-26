@@ -131,3 +131,8 @@ Aplicar `supabase/append_tracks.sql` (migração `append_new_playlist_tracks`). 
 ### Arraste livre de faixas
 
 O arraste pela alça mostra uma cópia semitransparente do card e abre espaço na grade antes de soltar. A posição é escolhida pelo centro do card arrastado e pela proximidade dos cards, incluindo os vãos da grade. A prévia usa apenas a ordem visual; grava uma única vez ao soltar e restaura a ordem ao cancelar, sair da área, trocar de tela ou perder o foco. Há rolagem automática nas bordas, animação de deslocamento que respeita movimento reduzido e navegação por setas do teclado. O teste de navegador cobre mouse e eventos de toque Android reais via CDP, sob a CSP do app.
+
+
+### Pressão contínua para organizar
+
+A alça exige 500 ms de pressão contínua antes de liberar o arraste, sem barra, contador ou indicação visual do tempo. Um toque curto ou deslocamento maior que 10 px antes desse prazo cancela a tentativa; o card semitransparente só surge após a ativação. Soltar, cancelar o toque, trocar de tela, perder foco ou ocultar a página também cancela o temporizador. O movimento e a rolagem automática permanecem disponíveis após a ativação. Os atalhos de teclado continuam imediatos. Testes com relógio controlado verificam o limite de 499/500 ms, e o teste de navegador verifica rejeição de toques/deslizes rápidos e arraste intencional com mouse e toque Android.

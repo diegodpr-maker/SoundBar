@@ -1,4 +1,6 @@
 export function moveTrackIds(ids,source,target){const result=[...ids],from=result.indexOf(source),to=result.indexOf(target);if(from<0||to<0||from===to)return result;result.splice(to,0,...result.splice(from,1));return result}
+export const DRAG_HOLD_MS=500;
+const HOLD_SLOP=10;
 
 // Gaps belong to the nearest card too; no need to hit a button or card.
 export function nearestTrackId(items,x,y){
@@ -22,6 +24,7 @@ export function attachTrackSort(root,{onCommit,isDisabled=()=>false,getIds}){
   if(!drag)return;
   const old=drag;drag=null;
   win.cancelAnimationFrame(frame);
+  win.clearTimeout(old.holdTimer);
   old.animations.forEach(a=>a.cancel());
   for(const card of old.cards)card.style.order=old.orders.get(card);
   old.source.classList.remove('sorting');old.grid.classList.remove('sort-active');
@@ -51,7 +54,7 @@ export function attachTrackSort(root,{onCommit,isDisabled=()=>false,getIds}){
   drag.source.classList.add('sorting');drag.grid.classList.add('sort-active');measure();
  }
  function update(){
-  if(!drag?.moved)return;
+  if(!drag?.active)return;
   const left=drag.x-drag.offsetX,top=drag.y-drag.offsetY;
   drag.ghost.style.transform=`translate3d(${left}px,${top}px,0) rotate(-1deg) scale(1.025)`;
   const x=left+drag.rect.width/2,y=top+drag.rect.height/2;
@@ -69,10 +72,10 @@ export function attachTrackSort(root,{onCommit,isDisabled=()=>false,getIds}){
  function tick(){
   if(!drag)return;
   if(!drag.source.isConnected||isDisabled()){clear();return}
-  if(drag.moved){
+  if(drag.active){
    const edge=80,h=win.innerHeight;
    const speed=drag.y<edge?-18*Math.min(1,(edge-drag.y)/edge):drag.y>h-edge?18*Math.min(1,(drag.y-h+edge)/edge):0;
-   if(speed)win.scrollBy(0,speed);
+   if(drag.moved&&speed)win.scrollBy(0,speed);
    update();
   }
   frame=win.requestAnimationFrame(tick);
@@ -84,20 +87,33 @@ export function attachTrackSort(root,{onCommit,isDisabled=()=>false,getIds}){
   const grid=source.parentElement,cards=[...grid.querySelectorAll('[data-track-id]')],ids=getIds();
   if(cards.length!==ids.length||cards.some(card=>!ids.includes(card.dataset.trackId)))return;
   e.preventDefault();const rect=source.getBoundingClientRect();
-  drag={handle,source,grid,cards,rect,pointer:e.pointerId,original:[...ids],ids:[...ids],orders:new Map(cards.map(card=>[card,card.style.order])),animations:[],x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY,offsetX:e.clientX-rect.left,offsetY:e.clientY-rect.top,moved:false,inside:true};
-  handle.setPointerCapture(e.pointerId);handle.setAttribute('aria-pressed','true');
+  drag={handle,source,grid,cards,rect,pointer:e.pointerId,original:[...ids],ids:[...ids],orders:new Map(cards.map(card=>[card,card.style.order])),animations:[],x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY,offsetX:e.clientX-rect.left,offsetY:e.clientY-rect.top,active:false,moved:false,inside:true};
+  handle.setPointerCapture(e.pointerId);handle.setAttribute('aria-pressed','false');
+  const pending=drag;
+  drag.holdTimer=win.setTimeout(()=>{
+   if(drag!==pending)return;
+   if(!source.isConnected||isDisabled()||doc.hidden){clear();return}
+   drag.active=true;drag.rect=source.getBoundingClientRect();
+   drag.startX=drag.x;drag.startY=drag.y;
+   drag.offsetX=drag.x-drag.rect.left;drag.offsetY=drag.y-drag.rect.top;
+   handle.setAttribute('aria-pressed','true');
+   start();update();
+  },DRAG_HOLD_MS);
   frame=win.requestAnimationFrame(tick);
  });
  function move(e){
   if(!drag||e.pointerId!==drag.pointer)return;
   e.preventDefault();drag.x=e.clientX;drag.y=e.clientY;
-  if(!drag.moved&&Math.hypot(drag.x-drag.startX,drag.y-drag.startY)>8){drag.moved=true;start()}
+  const distance=Math.hypot(drag.x-drag.startX,drag.y-drag.startY);
+  if(!drag.active){if(distance>HOLD_SLOP)clear();return}
+  if(distance>8)drag.moved=true;
   update();
  }
  root.addEventListener('pointermove',move);
  root.addEventListener('pointerup',e=>{
   if(!drag||e.pointerId!==drag.pointer)return;
   if(!drag.source.isConnected||isDisabled()){clear();return}
+  if(!drag.active){clear();return}
   move(e);const ids=[...drag.ids],from=drag.source.dataset.trackId;
   const changed=drag.moved&&drag.inside&&ids.some((id,i)=>id!==drag.original[i]);
   clear();if(changed)onCommit(ids,from);
@@ -105,6 +121,7 @@ export function attachTrackSort(root,{onCommit,isDisabled=()=>false,getIds}){
  const cancelPointer=e=>{if(drag&&e.pointerId===drag.pointer)clear()};
  root.addEventListener('pointercancel',cancelPointer);root.addEventListener('lostpointercapture',cancelPointer);
  root.addEventListener('click',e=>{if(e.target.closest('.pad-drag')){e.preventDefault();e.stopImmediatePropagation()}},true);
+ root.addEventListener('contextmenu',e=>{if(e.target.closest('.pad-drag'))e.preventDefault()});
  root.addEventListener('keydown',e=>{
   const handle=e.target.closest('.pad-drag');if(!handle||isDisabled()||drag)return;
   const delta={ArrowLeft:-1,ArrowUp:-1,ArrowRight:1,ArrowDown:1}[e.key];if(!delta)return;
