@@ -1,7 +1,7 @@
 name: WMA conversion verification
 on:
   push:
-    branches: [main, feature/wma-conversion, feature/playlist-batch-wake]
+    branches: [main, feature/wma-conversion, feature/playlist-batch-wake, feature/audio-file-limit]
     paths:
       - 'audio-conversion.js'
       - 'wma-worker.js'

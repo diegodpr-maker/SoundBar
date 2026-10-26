@@ -1,6 +1,6 @@
 import {inspectAudio,checkPlayable} from './audio-validation.js?v=33';
 const ASF=[0x30,0x26,0xb2,0x75,0x8e,0x66,0xcf,0x11,0xa6,0xd9,0x00,0xaa,0x00,0x62,0xce,0x6c];
-export async function prepareAudioUpload(blob,{filename=blob.name,maxBytes=25*1024*1024,onStage=()=>{},convert=convertWma,validate=inspectAudio,playable=typeof Audio==='undefined'?null:checkPlayable}={}){
+export async function prepareAudioUpload(blob,{filename=blob.name,maxBytes=30*1024*1024,onStage=()=>{},convert=convertWma,validate=inspectAudio,playable=typeof Audio==='undefined'?null:checkPlayable}={}){
  if(!(blob instanceof Blob)||!blob.size||blob.size>maxBytes)throw Error('Escolha um áudio de até '+Math.round(maxBytes/1024/1024)+' MB.');
  if(!/\.wma$/i.test(filename||''))return{blob,filename,converted:false};
  const header=new Uint8Array(await blob.slice(0,16).arrayBuffer());if(!ASF.every((b,i)=>header[i]===b))throw Error('Este arquivo não contém um WMA válido. Use o arquivo original.');

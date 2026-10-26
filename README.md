@@ -32,7 +32,7 @@ Nunca inclua chaves administrativas, senhas ou tokens no repositório público.
 
 Landing responsiva; cadastro sem e-mail, login, aprovação manual e saída; perfil e dashboard por usuário; playlists na nuvem; importação/download de áudios; reprodução simultânea ou uma por vez; loop; reinício; comportamento ao trocar de playlist; biblioteca com prévia e inserir direto em um botão; importação/exportação de backups do PWA anterior.
 
-O usuário pode importar áudios de até 25 MB. Há limites no servidor de 30 playlists, 1.000 faixas e até 1 GB no bucket por conta. São limites da implementação, sem cobrança ou planos pagos nesta versão. Os limites/custos da conta Supabase são administrados pelo dono do projeto.
+O usuário pode importar áudios de até 30 MB. Há limites no servidor de 30 playlists, 1.000 faixas e até 1 GB no bucket por conta. São limites da implementação, sem cobrança ou planos pagos nesta versão. Os limites/custos da conta Supabase são administrados pelo dono do projeto.
 
 ## Isolamento
 
@@ -102,10 +102,10 @@ A revisão de segurança está em [SECURITY_AUDIT.md](SECURITY_AUDIT.md), inclui
 
 ## Contribuições para a biblioteca
 
-Em Editar faixa, o dono de um áudio privado pode escolher “Enviar para a biblioteca”, fornecer autor/licença e declarar autorização de distribuição. Uma cópia verificada é guardada no bucket privado soundbar-submissions; o original permanece privado. O usuário acompanha a situação em Minhas contribuições. Apenas o administrador vê a fila em Gerenciar áudios, ouve a cópia enviada e publica ou recusa. O servidor impede autoaprovação e edição de situação direta, e a publicação usa ID estável para evitar duplicação em novas tentativas. Até 10 contribuições pendentes e 100 MB de cópias temporárias por usuário, com 25 MB por arquivo. A revisão humana não substitui antivírus/validação completa no servidor.
+Em Editar faixa, o dono de um áudio privado pode escolher “Enviar para a biblioteca”, fornecer autor/licença e declarar autorização de distribuição. Uma cópia verificada é guardada no bucket privado soundbar-submissions; o original permanece privado. O usuário acompanha a situação em Minhas contribuições. Apenas o administrador vê a fila em Gerenciar áudios, ouve a cópia enviada e publica ou recusa. O servidor impede autoaprovação e edição de situação direta, e a publicação usa ID estável para evitar duplicação em novas tentativas. Até 10 contribuições pendentes e 100 MB de cópias temporárias por usuário, com 30 MB por arquivo. A revisão humana não substitui antivírus/validação completa no servidor.
 
 ### Importação de WMA
-O PWA converte WMA (ASF sem DRM) para MP3 no dispositivo antes do upload, inclusive em coletâneas do administrador e na versão local. Usa FFmpeg WebAssembly single-thread `@ffmpeg/core@0.12.10`, carregado sob demanda de cdn.jsdelivr.net dentro de um worker dedicado. Na primeira utilização, é necessário baixar aproximadamente 32 MB do conversor; a conversão pode levar alguns minutos em celulares. Não exige COOP/COEP nem SharedArrayBuffer no GitHub Pages. Mantenha a tela aberta. Os arquivos não são enviados ao CDN. O resultado é validado e conferido antes do armazenamento, respeitando 25 MB para playlists e 50 MB para biblioteca, tanto na entrada quanto na saída. Arquivos protegidos, corrompidos, incompatíveis ou cuja saída ultrapassa o limite são rejeitados. Novas conversões precisam de rede caso o navegador não tenha o conversor em cache.
+O PWA converte WMA (ASF sem DRM) para MP3 no dispositivo antes do upload, inclusive em coletâneas do administrador e na versão local. Usa FFmpeg WebAssembly single-thread `@ffmpeg/core@0.12.10`, carregado sob demanda de cdn.jsdelivr.net dentro de um worker dedicado. Na primeira utilização, é necessário baixar aproximadamente 32 MB do conversor; a conversão pode levar alguns minutos em celulares. Não exige COOP/COEP nem SharedArrayBuffer no GitHub Pages. Mantenha a tela aberta. Os arquivos não são enviados ao CDN. O resultado é validado e conferido antes do armazenamento, respeitando 30 MB para playlists e 50 MB para biblioteca, tanto na entrada quanto na saída. Arquivos protegidos, corrompidos, incompatíveis ou cuja saída ultrapassa o limite são rejeitados. Novas conversões precisam de rede caso o navegador não tenha o conversor em cache.
 
 `tests/verify-wma-runtime.mjs` e o workflow WMA executam o worker com o motor real, convertem tons originais WMA v1/v2 para MP3 e decodificam o resultado. O motor não é carregado durante as demais tarefas do app. FFmpeg e seus codecs têm licenças próprias: https://github.com/ffmpegwasm/ffmpeg.wasm e https://ffmpeg.org/legal.html.
 
@@ -184,7 +184,7 @@ Os testes de navegador verificam identidade do elemento, fonte, posição retida
 
 ### Importação de vários áudios na playlist
 
-Importar áudios aceita de 1 a 300 arquivos por seleção, com o limite existente de 25 MB por áudio e a cota normal da conta. A fila trabalha sequencialmente, mantém a playlist de destino capturada ao selecionar os arquivos e apresenta resultados por arquivo. Falhas isoladas não descartam os demais; Tentar novamente os pendentes ignora os já confirmados. Novas faixas entram no fim através do trigger existente. A interface mantém o lote durante navegações internas; fechar/recarregar a página perde as referências locais aos arquivos pendentes.
+Importar áudios aceita de 1 a 300 arquivos por seleção, com o limite existente de 30 MB por áudio e a cota normal da conta. A fila trabalha sequencialmente, mantém a playlist de destino capturada ao selecionar os arquivos e apresenta resultados por arquivo. Falhas isoladas não descartam os demais; Tentar novamente os pendentes ignora os já confirmados. Novas faixas entram no fim através do trigger existente. A interface mantém o lote durante navegações internas; fechar/recarregar a página perde as referências locais aos arquivos pendentes.
 
 Cada entrada usa um UUID fixo (`X-Upload-Id` é uma opção interna do adaptador, não um cabeçalho novo enviado ao Storage). `playlist-transfer.js` usa o usuário autenticado, verifica a playlist e o objeto existente, grava sem sobrescrever e compara os bytes por SHA-256 antes do cadastro. Uma resposta de rede perdida é reconciliada pela linha e pelo caminho estáveis. Nunca remove objetos quando não consegue determinar se o cadastro foi confirmado. O upload legado sem esse identificador continua atendendo backups antigos. Nenhuma política, cota ou chave de serviço foi alterada.
 
@@ -199,9 +199,9 @@ A API exige contexto seguro e depende do navegador e das configurações do apar
 
 ### Cota privada de 1 GB
 
-Aplicar `supabase/storage_limit.sql` depois das migrações existentes. A cota por conta passa a 1.073.741.824 bytes (1 GiB, exibido como 1 GB). As faixas importadas da comunidade respeitam a mesma cota. O limite por arquivo continua em 26.214.400 bytes; verificação de dono, aprovação, MIME e formato de caminho permanece nas políticas existentes. A alteração não muda o plano ou a capacidade contratada do projeto Supabase. As proteções de tamanho/memória para importar backups JSON permanecem independentes da cota de áudio.
+Aplicar `supabase/storage_limit.sql` depois das migrações existentes. A cota por conta passa a 1.073.741.824 bytes (1 GiB, exibido como 1 GB). As faixas importadas da comunidade respeitam a mesma cota. O limite por arquivo continua em 31.457.280 bytes; verificação de dono, aprovação, MIME e formato de caminho permanece nas políticas existentes. A alteração não muda o plano ou a capacidade contratada do projeto Supabase. As proteções de tamanho/memória para importar backups JSON permanecem independentes da cota de áudio.
 
-A checagem conservadora de 25 MiB para uma pré-autorização sem tamanho permanece. O aumento libera os envios pendentes observados com 180,23 MiB utilizados, sem retirar a proteção de cota. Não altera o mecanismo de cálculo de tamanho ausente perto do novo limite. A verificação pós-migração testa a própria função com o mesmo usuário e tamanhos das tentativas recusadas, sem enviar arquivos ou excluir dados.
+A checagem conservadora de 30 MiB para uma pré-autorização sem tamanho permanece. O aumento libera os envios pendentes observados com 180,23 MiB utilizados, sem retirar a proteção de cota. Não altera o mecanismo de cálculo de tamanho ausente perto do novo limite. A verificação pós-migração testa a própria função com o mesmo usuário e tamanhos das tentativas recusadas, sem enviar arquivos ou excluir dados.
 
 
 ### Cores personalizadas no tema claro
@@ -209,3 +209,8 @@ A checagem conservadora de 25 MiB para uma pré-autorização sem tamanho perman
 As cores salvas das playlists e dos cards de áudio prevalecem sobre o azul do tema. `playlist-colors.js` valida o hexadecimal, preserva a cor exata e escolhe fundo claro/escuro para os símbolos no modo claro. Cores muito claras usam um marcador escurecido nas bordas para manter contraste. Nomes, descrições e controles mantêm as cores de texto do tema. O seletor de cor apresenta o valor salvo; a cor verde histórica não é mais substituída silenciosamente ao editar uma playlist ou faixa. Testes cobrem vermelho, amarelo, branco, preto, verde, cinza, azul, injeção de CSS e o estilo calculado no navegador em ambos os temas.
 
 O resultado de importação pode ser fechado após o lote. Envios concluídos são retirados do painel; pendentes ficam guardados em memória e podem ser reabertos por Envios pendentes sem reenviar os já confirmados. Fechar o resultado não cancela ou remove áudios salvos. O teste de navegador cobre fechamento, reabertura e nova tentativa sem duplicação.
+
+
+### Arquivos privados de até 30 MB
+
+Aplicar `supabase/audio_file_limit.sql` após as migrações de cota e contribuições. O limite por áudio passa a 31.457.280 bytes em playlists, conversão WMA e cópias enviadas à moderação. Os dois buckets privados, as restrições de tamanho das tabelas e as funções de quota usam o mesmo valor. A biblioteca pública continua com seu limite administrativo de 50 MB; a cota privada permanece 1 GB e a cota de contribuições permanece 100 MB. A validação de backup permite até 30 MB por áudio e conserva a proteção total de memória de 200 MB.

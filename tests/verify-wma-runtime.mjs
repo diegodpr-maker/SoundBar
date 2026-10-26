@@ -12,7 +12,7 @@ await import('../wma-worker.js');
 for(const codec of ['wmav1','wmav2']){
  const input=readFileSync(new URL('./fixtures/tone-'+codec+'.wma.base64',import.meta.url),'utf8');
  const bytes=Uint8Array.from(Buffer.from(input,'base64')).buffer;
- await self.onmessage({data:{bytes,maxBytes:25*1024*1024}});
+ await self.onmessage({data:{bytes,maxBytes:30*1024*1024}});
  assert.equal(result.type,'done',result.message);const blob=new Blob([result.bytes],{type:'audio/mpeg'});
  await inspectAudio(blob,'tone.mp3');assert.ok(blob.size>1000);
  // Independently decode the resulting MP3 using the same runtime.

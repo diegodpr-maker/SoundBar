@@ -1,10 +1,10 @@
-import {prepareAudioUpload} from './audio-conversion.js?v=33';
+import {prepareAudioUpload} from './audio-conversion.js?v=44';
 export function createPlaylistBatch(files,{owner,playlistId,playlistName,makeId=()=>crypto.randomUUID()}={}){
  const selected=Array.from(files||[]);if(!selected.length||selected.length>300)throw Error('Selecione de 1 a 300 áudios.');
  return{owner,playlistId,playlistName,busy:false,entries:selected.map(file=>({id:makeId(),file,filename:file.name,status:'pending',stage:'',error:''}))};
 }
 export function batchCounts(job){return{total:job.entries.length,done:job.entries.filter(e=>e.status==='done').length,failed:job.entries.filter(e=>e.status==='failed').length,pending:job.entries.filter(e=>!['done','failed'].includes(e.status)).length}}
-export async function runPlaylistBatch(job,{upload,prepare=prepareAudioUpload,onChange=()=>{},isCurrent=()=>true,maxBytes=25*1024*1024,maxPreparedBytes=64*1024*1024}={}){
+export async function runPlaylistBatch(job,{upload,prepare=prepareAudioUpload,onChange=()=>{},isCurrent=()=>true,maxBytes=30*1024*1024,maxPreparedBytes=64*1024*1024}={}){
  if(job.busy)return batchCounts(job);job.busy=true;onChange();
  try{
   for(const entry of job.entries){
