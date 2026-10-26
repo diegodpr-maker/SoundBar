@@ -47,3 +47,10 @@ test('account deletion requires administrator access and delegates only to the a
 });
 
 test('deleted accounts with a cached token return an authentication error instead of pending access',async()=>{const {client,calls}=mockClient({accessStatus:'deleted'});await assert.rejects(()=>createBackend(client).call('/access'),e=>e.status===401);assert.equal(calls.filter(c=>c.table).length,0)});
+
+
+test('playlist fader settings update only the authenticated owner and reject unsupported durations',async()=>{
+ const {client,calls}=mockClient(),backend=createBackend(client);const body={name:'Event',description:'',color:'#78b5ff',play_mode:'single',loop:false,retrigger:'stop',switch_mode:'stop',event_fade_enabled:true,event_fade_duration:3000,user_id:'bob'};
+ await backend.call('/playlists/playlist-1',{method:'PATCH',body});const update=calls.find(c=>c.table==='sb_playlists'&&c.operation==='update');assert.equal(update.payload.event_fade_enabled,true);assert.equal(update.payload.event_fade_duration,3000);assert.ok(update.filters.some(([k,v])=>k==='user_id'&&v==='alice'));assert.equal(Object.hasOwn(update.payload,'user_id'),false);
+ for(const invalid of [{event_fade_enabled:'true'},{event_fade_duration:999},{event_fade_duration:'2000'}])await assert.rejects(()=>backend.call('/playlists/playlist-1',{method:'PATCH',body:{...body,...invalid}}),/fader inválida/);
+});
