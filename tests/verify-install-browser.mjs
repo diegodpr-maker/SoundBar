@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 const {chromium} = createRequire(import.meta.url)(process.argv[2]);
 const root = new URL('../', import.meta.url);
 const csp = readFileSync(new URL('app.html', root), 'utf8').match(/<meta http-equiv="Content-Security-Policy"[^>]+>/)[0];
-const fixture = `<!doctype html><html data-theme="dark"><head>${csp}<meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="themes.css"><link rel="stylesheet" href="pwa-install.css"><script defer src="pwa-install.js"></script></head><body><main><h1>Harmony</h1><input aria-label="E-mail"></main></body></html>`;
+const fixture = `<!doctype html><html data-theme="dark"><head><meta charset="utf-8">${csp}<meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="themes.css"><link rel="stylesheet" href="pwa-install.css"><script defer src="pwa-install.js"></script></head><body><main><h1>Harmony</h1><input aria-label="E-mail"></main></body></html>`;
 const url = 'https://harmony-install.test/install-check.html';
 const browser = await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']});
 const errors=[];
