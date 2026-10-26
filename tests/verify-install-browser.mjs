@@ -14,7 +14,7 @@ browser.on('disconnected',()=>console.log('Browser closed'));
 console.log('Browser ready');
 const mobile='Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/130.0.0.0 Mobile Safari/537.36';
 async function page({userAgent=mobile,installed=false,early=false}={}) {
-  const ctx=await browser.newContext({userAgent,viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'});
+  const ctx=await browser.newContext({userAgent,viewport:{width:390,height:844},isMobile:/Android|iPhone|iPad/i.test(userAgent),hasTouch:/Android|iPhone|iPad/i.test(userAgent),serviceWorkers:'block'});
   await ctx.route('**/*', async route=>{
     const request=new URL(route.request().url());
     if(request.pathname==='/install-check.html')return route.fulfill({contentType:'text/html',body:fixture});
