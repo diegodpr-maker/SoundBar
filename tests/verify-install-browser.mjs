@@ -10,6 +10,8 @@ const fixture = `<!doctype html><html data-theme="dark"><head><meta charset="utf
 const url = 'https://harmony-install.test/install-check.html';
 const browser = await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']});
 const errors=[];
+browser.on('disconnected',()=>console.log('Browser closed'));
+console.log('Browser ready');
 const mobile='Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/130.0.0.0 Mobile Safari/537.36';
 async function page({userAgent=mobile,installed=false,early=false}={}) {
   const ctx=await browser.newContext({userAgent,viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'});
@@ -33,6 +35,7 @@ async function page({userAgent=mobile,installed=false,early=false}={}) {
     };
     if(early)document.addEventListener('DOMContentLoaded',()=>window.offer(),{once:true});
   },{installed,early});
+  ctx.setDefaultTimeout(10000);
   const p=await ctx.newPage();
   p.on('pageerror',e=>errors.push(e.message));
   p.on('console',m=>{if(/Content Security Policy|Refused to/.test(m.text()))errors.push(m.text())});
@@ -57,6 +60,7 @@ try {
   await dismiss.evaluate(()=>localStorage.setItem('harmony-install-dismissed-until',String(Date.now()-1)));
   await dismiss.reload();await dismiss.evaluate(()=>window.offer());assert.equal(await visible(dismiss),true,'invitation returns after cooldown');
   await dismiss.evaluate(()=>window.dispatchEvent(new Event('appinstalled')));assert.equal(await visible(dismiss),false);
+  console.log('Android flows passed');
   const iphone=await page({userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile Safari/604.1'});
   assert.equal(await visible(iphone),true);await iphone.locator('[data-install]').click();
   assert.equal(await iphone.locator('dialog').evaluate(d=>d.open),true);
@@ -66,6 +70,7 @@ try {
   const bg=await iphone.locator('#harmony-install').evaluate(e=>getComputedStyle(e).backgroundColor);assert.equal(bg,'rgb(255, 255, 255)');
   await iphone.screenshot({path:'/tmp/harmony-install-iphone.png'});
   await iphone.locator('[data-install]').click();await iphone.locator('[data-done]').click();assert.equal(await visible(iphone),false);
+  console.log('iPhone flows passed');
   const installed=await page({installed:true});assert.equal(await installed.locator('#harmony-install').count(),0);assert.equal(await installed.evaluate(()=>window.offer()),false);
   const desktop=await page({userAgent:'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/130.0.0.0 Safari/537.36'});assert.equal(await desktop.locator('#harmony-install').count(),0);
   const early=await page({early:true});assert.equal(await visible(early),true,'eligibility before DOMContentLoaded is retained');
