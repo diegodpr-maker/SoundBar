@@ -4,8 +4,9 @@ export function playbackState(active){
  const paused=selected.filter(item=>item.pausedByUser||(item.ready===true&&item.audio.paused&&!item.resuming));
  return{selected,audible,paused,action:selected.length&&paused.length===selected.length?'resume':'pause'};
 }
-export function pauseTracks(active){
- for(const item of active.values()){
+export function pauseTracks(active,ids=[...active.keys()]){
+ for(const id of ids){
+  const item=active.get(id);if(!item)continue;
   item.playbackVersion=(item.playbackVersion||0)+1;item.pausedByUser=true;item.resuming=false;item.playing=false;item.audio.pause();
  }
 }

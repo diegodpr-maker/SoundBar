@@ -34,3 +34,23 @@ test('a new selection after a paused or loading-only group starts directly witho
 
 
 test('a stalled incoming track freezes the transition instead of fading the predecessor into silence',()=>{const s=setup(),a=s.select('a'),b=s.select('b');s.tick(500);s.fader.buffering('b');s.tick(10000);assert.equal(a.fadeLevel,.75);assert.equal(b.fadeLevel,.25);s.fader.started('b');s.tick(1500);assert.deepEqual([...s.active.keys()],['b'])});
+
+test('card pause fades to zero without removing the source or position, then resumes gradually',()=>{
+ const s=setup(),a=s.select('a');a.audio.src='blob:original';s.fader.pauseCard('a');s.tick(1000);assert.equal(a.fadeLevel,.5);assert.equal(a.audio.paused,false);s.tick(1000);
+ assert.equal(a.audio.paused,true);assert.equal(a.audio.currentTime,12);assert.equal(a.audio.src,'blob:original');assert.equal(s.active.get('a'),a);assert.equal(a.fadeLevel,0);
+ s.fader.resumeCard('a');a.audio.paused=false;a.playing=true;s.tick(1000);assert.equal(a.fadeLevel,.5);s.tick(1000);assert.equal(a.fadeLevel,1);assert.equal(a.audio.currentTime,12);
+});
+test('another card during fade-out uses the configured two-track crossfade; a paused old card is reset',()=>{
+ const s=setup(),a=s.select('a');s.fader.pauseCard('a');s.tick(500);const b=s.select('b');assert.equal(s.active.size,2);assert.equal(a.fadeLevel,.75);s.tick(2000);assert.deepEqual([...s.active.keys()],['b']);assert.equal(b.fadeLevel,1);
+});
+test('rapid reversal and stop-all cancel old pause callbacks instead of pausing a later playback',()=>{
+ const s=setup(),a=s.select('a');s.fader.pauseCard('a');s.tick(750);s.fader.resumeCard('a');s.tick(2000);assert.equal(a.audio.paused,false);assert.equal(a.fadeLevel,1);
+ s.fader.pauseCard('a');s.fader.reset();s.tick(10000);assert.equal(a.audio.paused,false);
+});
+test('pausing a pending card does not auto-start and a failed continuation remains retryable at zero gain',()=>{
+ const s=setup(),a=s.select('a',false);s.fader.pauseCard('a');assert.equal(a.pausedByUser,true);assert.equal(a.fadeLevel,0);assert.equal(s.fader.state(),null);
+ s.fader.resumeCard('a');s.fader.pauseCard('a',true);s.tick(5000);assert.equal(a.audio.paused,true);assert.equal(a.fadeLevel,0);assert.equal(s.active.get('a'),a);
+});
+
+
+test('leaving event mode finishes a requested card pause and preserves the paused gain on reentry',()=>{const s=setup(),a=s.select('a');s.fader.pauseCard('a');s.tick(500);s.fader.settle();assert.equal(a.audio.paused,true);assert.equal(a.fadeLevel,0);assert.equal(a.audio.currentTime,12);s.fader.settle();assert.equal(a.fadeLevel,0)});

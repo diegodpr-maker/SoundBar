@@ -15,3 +15,13 @@ test('paused selections retain their source and position across playlist renderi
  p.prepare([{id:'b',url:'two'}]);assert.equal(p.get('a').audio,first);assert.equal(first.src,'one');assert.equal(first.currentTime,9);
  p.prepare([{id:'a',url:'one'}]);first.ready();assert.deepEqual(p.stats(),{ready:1,total:1});p.clear();assert.equal(p.get('a'),undefined);assert.equal(first.src,'');
 });
+
+test('finishing or failing a background download never reloads a retained paused selection',async()=>{
+ for(const failed of [false,true]){
+  let finish,fail;const retained=new Set(),p=createAudioPool({makeAudio:()=>new AudioMock(),isRetained:a=>retained.has(a),fetcher:()=>new Promise((resolve,reject)=>{finish=resolve;fail=reject}),makeURL:()=> 'blob:late'});
+  p.prepare([{id:'a',url:'remote',size:5}]);const audio=p.get('a').audio;retained.add(audio);audio.currentTime=17;audio.paused=true;
+  if(failed)fail(Error('offline'));else finish({ok:true,blob:async()=>new Blob(['audio'])});await tick();
+  assert.equal(audio.src,'remote');assert.equal(audio.currentTime,17);assert.equal(audio.calls,0);
+  retained.delete(audio);p.stop('a');assert.equal(audio.currentTime,0);if(!failed)assert.equal(audio.src,'blob:late');p.clear();
+ }
+});

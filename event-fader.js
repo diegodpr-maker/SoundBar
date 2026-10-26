@@ -1,4 +1,4 @@
-export function createEventFader({active,stop,levels,now=()=>performance.now(),schedule=fn=>setInterval(fn,25),cancel=clearInterval,duration=2000,onChange=()=>{}}){
+export function createEventFader({active,stop,levels,pause=id=>{const item=active.get(id);if(item){item.pausedByUser=true;item.playing=false;item.audio.pause()}},now=()=>performance.now(),schedule=fn=>setInterval(fn,25),cancel=clearInterval,duration=2000,onChange=()=>{}}){
  let pair=null,timer=null,paused=false,waiting=false;
  const level=item=>item.fadeLevel??1;
  function clearTimer(){if(timer!==null)cancel(timer);timer=null}
@@ -6,9 +6,10 @@ export function createEventFader({active,stop,levels,now=()=>performance.now(),s
   if(!pair?.started||paused||waiting)return;
   const ratio=Math.min(1,Math.max(0,(now()-pair.at)/pair.duration));
   const incoming=active.get(pair.incoming),outgoing=active.get(pair.outgoing);
-  if(incoming)levels.progress(incoming,pair.into+(1-pair.into)*ratio);
+  const target=pair.kind==='pause'?0:1;
+  if(incoming)levels.progress(incoming,pair.into+(target-pair.into)*ratio);
   if(outgoing)levels.progress(outgoing,pair.from*(1-ratio));
-  if(ratio>=1){const previous=pair.outgoing;pair=null;clearTimer();if(incoming)levels.set(incoming,1);if(active.has(previous))stop(previous);onChange()}
+  if(ratio>=1){const {outgoing:previous,incoming:id,kind}=pair;pair=null;clearTimer();if(incoming)levels.set(incoming,target);if(kind==='pause')pause(id);if(active.has(previous))stop(previous);onChange()}
  }
  function hold(){
   update();clearTimer();if(!pair)return;
@@ -18,7 +19,7 @@ export function createEventFader({active,stop,levels,now=()=>performance.now(),s
  function run(){
   if(!pair?.started||paused||waiting)return;pair.at=now();
   const incoming=active.get(pair.incoming),outgoing=active.get(pair.outgoing);
-  if(incoming)levels.ramp(incoming,1,pair.duration);if(outgoing)levels.ramp(outgoing,0,pair.duration);
+  if(incoming)levels.ramp(incoming,pair.kind==='pause'?0:1,pair.duration);if(outgoing)levels.ramp(outgoing,0,pair.duration);
   timer=schedule(update);
  }
  function survivor(){
@@ -29,7 +30,7 @@ export function createEventFader({active,stop,levels,now=()=>performance.now(),s
   hold();pair=null;paused=false;waiting=false;const previous=[...active.values()].some(item=>item.playing&&!item.audio.paused&&!item.audio.ended)?survivor():undefined;
   // Remove superseded loads/quiet tracks BEFORE the next audio is registered.
   for(const key of [...active.keys()])if(key!==previous)stop(key);
-  if(previous){pair={incoming:id,outgoing:previous,started:false};onChange();return 0}
+  if(previous){active.get(previous).pausedByCard=false;pair={incoming:id,outgoing:previous,started:false};onChange();return 0}
   return 1;
  }
  function started(id){
@@ -44,13 +45,26 @@ export function createEventFader({active,stop,levels,now=()=>performance.now(),s
   hold();if(!pair)return;const other=id===pair.incoming?pair.outgoing:pair.incoming;pair=null;
   const item=active.get(other);if(item)levels.set(item,1);onChange();
  }
- function pause(){hold();paused=true}
+ function pauseAll(){hold();if(pair?.kind==='pause'){const id=pair.incoming;pair=null;const item=active.get(id);if(item)levels.set(item,0);pause(id)}paused=true}
  function resume(){if(!paused)return;paused=false;run()}
- function buffering(id){if(pair?.started&&pair.incoming===id&&!waiting){hold();waiting=true}}
+ function buffering(id){if(pair?.started&&pair.incoming===id&&!waiting){if(pair.kind==='pause'){pauseCard(id,true);return}hold();waiting=true}}
+ function cardFade(id,kind){
+  hold();pair=null;paused=false;waiting=false;
+  for(const key of [...active.keys()])if(key!==id)stop(key);
+  const item=active.get(id);if(!item)return;
+  pair={kind,incoming:id,started:true,into:level(item),from:0,at:now(),duration};run();onChange();
+ }
+ function pauseCard(id,immediate=false){
+  const item=active.get(id);if(!item)return;item.pausedByCard=true;
+  if(immediate||item.audio.paused||!item.playing){hold();pair=null;clearTimer();paused=false;waiting=false;for(const key of [...active.keys()])if(key!==id)stop(key);levels.set(item,0);pause(id);onChange();return}
+  cardFade(id,'pause');
+ }
+ function resumeCard(id){const item=active.get(id);if(item){item.pausedByCard=false;cardFade(id,'resume')}}
  function settle(){
+  if(pair?.kind==='pause'){pauseCard(pair.incoming,true);return}
   hold();pair=null;paused=false;waiting=false;const keep=survivor();for(const id of [...active.keys()])if(id!==keep)stop(id);
-  if(keep)levels.set(active.get(keep),1);onChange();
+  if(keep){const item=active.get(keep);levels.set(item,item.pausedByCard&&item.audio.paused?0:1)}onChange();
  }
  function reset(){clearTimer();pair=null;paused=false;waiting=false}
- return{prepare,started,buffering,removing,pause,resume,settle,reset,setDuration:ms=>{if([1000,2000,3000,5000].includes(ms))duration=ms},state:()=>pair?{...pair,paused,waiting}:null};
+ return{prepare,started,buffering,removing,pause:pauseAll,pauseCard,resumeCard,resume,settle,reset,setDuration:ms=>{if([1000,2000,3000,5000].includes(ms))duration=ms},state:()=>pair?{...pair,paused,waiting}:null};
 }

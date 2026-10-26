@@ -14,3 +14,9 @@ test('a blocked continuation remains available for retry and a later pause cance
  let reject;a.audio.play=()=>new Promise((_,r)=>reject=r);const pending=resumeTracks(active);pauseTracks(active);reject(Object.assign(Error('cancelled'),{name:'AbortError'}));assert.deepEqual(await pending,[]);assert.equal(a.pausedByUser,true);assert.equal(a.resuming,false);
 });
 test('ending or removing a track while continuation is pending does not revive it',async()=>{const a=track('A'),active=new Map([['a',a]]);let reject;a.audio.play=()=>new Promise((_,r)=>reject=r);pauseTracks(active);const pending=resumeTracks(active);active.delete('a');reject(Error('removed'));assert.deepEqual(await pending,[]);a.audio.ended=true;assert.equal(playbackState(new Map([['a',a]])).selected.length,0)});
+
+test('pausing a card leaves the other mix track playing and resumes the same source at its position',async()=>{
+ const a=track('A',23),b=track('B',8),active=new Map([['a',a],['b',b]]);a.audio.src='blob:same-source';pauseTracks(active,['a']);
+ assert.equal(active.get('a'),a);assert.equal(a.audio.currentTime,23);assert.equal(a.audio.src,'blob:same-source');assert.equal(a.audio.paused,true);assert.equal(b.audio.paused,false);
+ await resumeTracks(active,['a']);assert.equal(a.audio.currentTime,23);assert.equal(a.audio.src,'blob:same-source');assert.equal(b.audio.paused,false);
+});
