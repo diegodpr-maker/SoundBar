@@ -32,7 +32,7 @@ Nunca inclua chaves administrativas, senhas ou tokens no repositório público.
 
 Landing responsiva; cadastro sem e-mail, login, aprovação manual e saída; perfil e dashboard por usuário; playlists na nuvem; importação/download de áudios; reprodução simultânea ou uma por vez; loop; reinício; comportamento ao trocar de playlist; biblioteca com prévia e inserir direto em um botão; importação/exportação de backups do PWA anterior.
 
-O usuário pode importar áudios de até 25 MB. Há limites no servidor de 30 playlists, 1.000 faixas e até 200 MB no bucket por conta. São limites da implementação, sem cobrança ou planos pagos nesta versão. Os limites/custos da conta Supabase são administrados pelo dono do projeto.
+O usuário pode importar áudios de até 25 MB. Há limites no servidor de 30 playlists, 1.000 faixas e até 1 GB no bucket por conta. São limites da implementação, sem cobrança ou planos pagos nesta versão. Os limites/custos da conta Supabase são administrados pelo dono do projeto.
 
 ## Isolamento
 
@@ -195,3 +195,17 @@ Conversões WMA pendentes conservam o mesmo Blob para uma nova tentativa, evitan
 `event-wake-lock.js` solicita Screen Wake Lock de tela ao ativar o modo evento, incluindo o modo sem tela cheia. Libera ao sair, navegar, encerrar a sessão ou ocultar a página. Ao voltar ao app visível, solicita um novo bloqueio se o modo ainda estiver ativo. Solicitações pendentes de um modo já encerrado são liberadas assim que retornam. Liberações do sistema podem ser tentadas novamente no próximo toque; recusas não geram ciclos de pedidos. O indicador mostra Tela ativa somente depois da concessão, e Tela pode apagar em navegadores sem suporte ou quando o aparelho recusar.
 
 A API exige contexto seguro e depende do navegador e das configurações do aparelho, inclusive economia de energia. Não pode impedir o bloqueio manual do celular. Referência: https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API. Testes unitários cobrem permissões, segundo plano, corridas de entrada/saída e falhas; o teste de navegador exercita a interface móvel com seleção múltipla, retomada, navegação e concessões de tela simuladas. O teste de SQL existente de inclusão/ordenação é executado com ROLLBACK, sem alterar contas reais.
+
+
+### Cota privada de 1 GB
+
+Aplicar `supabase/storage_limit.sql` depois das migrações existentes. A cota por conta passa a 1.073.741.824 bytes (1 GiB, exibido como 1 GB). As faixas importadas da comunidade respeitam a mesma cota. O limite por arquivo continua em 26.214.400 bytes; verificação de dono, aprovação, MIME e formato de caminho permanece nas políticas existentes. A alteração não muda o plano ou a capacidade contratada do projeto Supabase. As proteções de tamanho/memória para importar backups JSON permanecem independentes da cota de áudio.
+
+A checagem conservadora de 25 MiB para uma pré-autorização sem tamanho permanece. O aumento libera os envios pendentes observados com 180,23 MiB utilizados, sem retirar a proteção de cota. Não altera o mecanismo de cálculo de tamanho ausente perto do novo limite. A verificação pós-migração testa a própria função com o mesmo usuário e tamanhos das tentativas recusadas, sem enviar arquivos ou excluir dados.
+
+
+### Cores personalizadas no tema claro
+
+As cores salvas das playlists e dos cards de áudio prevalecem sobre o azul do tema. `playlist-colors.js` valida o hexadecimal, preserva a cor exata e escolhe fundo claro/escuro para os símbolos no modo claro. Cores muito claras usam um marcador escurecido nas bordas para manter contraste. Nomes, descrições e controles mantêm as cores de texto do tema. O seletor de cor apresenta o valor salvo; a cor verde histórica não é mais substituída silenciosamente ao editar uma playlist ou faixa. Testes cobrem vermelho, amarelo, branco, preto, verde, cinza, azul, injeção de CSS e o estilo calculado no navegador em ambos os temas.
+
+O resultado de importação pode ser fechado após o lote. Envios concluídos são retirados do painel; pendentes ficam guardados em memória e podem ser reabertos por Envios pendentes sem reenviar os já confirmados. Fechar o resultado não cancela ou remove áudios salvos. O teste de navegador cobre fechamento, reabertura e nova tentativa sem duplicação.

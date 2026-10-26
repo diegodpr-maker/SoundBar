@@ -1,7 +1,7 @@
 name: Playlist batch and event screen verification
 on:
   push:
-    branches: [main, feature/playlist-batch-wake]
+    branches: [main, feature/playlist-batch-wake, feature/storage-limit]
     paths:
       - 'app.js'
       - 'app.html'
