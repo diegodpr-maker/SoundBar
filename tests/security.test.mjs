@@ -8,3 +8,5 @@ test('backup roundtrips per-playlist fader preferences and rejects invalid types
  const data=backup();data.playlists[0].settings={event_fade_enabled:false,event_fade_duration:5000};assert.deepEqual(validateBackup(data).playlists[0].settings,data.playlists[0].settings);
  data.playlists[0].settings.event_fade_duration=0;assert.throws(()=>validateBackup(data),/Configuração inválida/);data.playlists[0].settings={event_fade_enabled:'false'};assert.throws(()=>validateBackup(data),/Configuração inválida/);
 });
+
+test('backup audio validation follows the individual file limit without relaxing format rules',()=>{const data=backup();assert.doesNotThrow(()=>validateBackup(data,{maxFileBytes:1048576}));assert.throws(()=>validateBackup(data,{maxFileBytes:52428801}),/Limite/);data.audio.track='data:text/html;base64,PHNjcmlwdD4=';assert.throws(()=>validateBackup(data,{maxFileBytes:52428800}),/áudios locais/)});

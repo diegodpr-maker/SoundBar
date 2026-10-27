@@ -1,0 +1,32 @@
+name: Account limits and upload preparation verification
+on:
+  push:
+    branches: [main, feature/account-limits]
+    paths:
+      - '*.js'
+      - '*.html'
+      - 'supabase/account_limits.sql'
+      - 'tests/*limits*'
+      - 'tests/*file-read*'
+      - 'tests/library-batch.test.mjs'
+      - '.github/workflows/account-limits.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: npm test && npm run check && node --check account-limits.js && node --check audio-file-read.js
+      - name: Install browser driver
+        run: npm install --prefix /tmp/harmony-browser --ignore-scripts --no-audit --no-fund playwright@1.56.1
+      - name: Install Chromium
+        run: node /tmp/harmony-browser/node_modules/playwright/cli.js install chromium
+      - name: Verify admin limits and stalled MP3 recovery
+        timeout-minutes: 2
+        run: node tests/verify-account-limits-browser.mjs /tmp/harmony-browser/node_modules/playwright
+      - name: Verify existing imports, offline launch and account deletion
+        timeout-minutes: 3
+        run: node tests/verify-batch-wake-browser.mjs /tmp/harmony-browser/node_modules/playwright && node tests/verify-offline-browser.mjs /tmp/harmony-browser/node_modules/playwright && node tests/verify-account-deletion-browser.mjs /tmp/harmony-browser/node_modules/playwright

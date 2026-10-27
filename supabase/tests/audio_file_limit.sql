@@ -16,7 +16,7 @@ begin
  perform set_config('request.jwt.claim.sub','',true);
  if soundbar_private.sb_storage_quota(null) or soundbar_private.sb_submission_storage_quota(null) then raise exception 'Anonymous quota access allowed';end if;
  execute 'reset role';
- if exists(select 1 from storage.buckets where id in('soundbar-audio','soundbar-submissions') and (file_size_limit<>31457280 or public)) then raise exception 'Private bucket limit incorrect';end if;
+ if exists(select 1 from storage.buckets where ((id='soundbar-audio' and file_size_limit<>52428800) or (id='soundbar-submissions' and file_size_limit<>31457280) or (id in('soundbar-audio','soundbar-submissions') and public))) then raise exception 'Private bucket limit incorrect';end if;
  if not exists(select 1 from storage.buckets where id='soundbar-library' and file_size_limit=52428800) then raise exception 'Administrative library limit changed';end if;
 end$$;
 rollback;

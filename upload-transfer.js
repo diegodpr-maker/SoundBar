@@ -14,12 +14,12 @@ export function createLibraryTransfer({storage,find,insert,unwrap,wait=pause,mak
   const read=task=>retryRead(task,{wait});
   const isMissing=e=>[400,404].includes(Number(e?.status||e?.statusCode))&&/not.?found|does not exist|object not found/i.test(e?.message||'');
   const loadStored=()=>read(async()=>unwrap(await withAudioTimeout(storage.download(job.path))));
-  const reconcileRow=async()=>{const row=await read(()=>find(job.id));if(row){if(row.object_path!==job.path)throw Error('O cadastro encontrado não corresponde a este envio.');job.result=row;return row}return null};
+  const reconcileRow=async()=>{const row=await read(()=>withAudioTimeout(find(job.id),20000,'Tempo esgotado ao confirmar o cadastro. Tente novamente.'));if(row){if(row.object_path!==job.path)throw Error('O cadastro encontrado não corresponde a este envio.');job.result=row;return row}return null};
   // Complete local read first: files from cloud folders may become unavailable mid-batch.
-  const bytes=await stage('Leitura do arquivo no computador',()=>blob.arrayBuffer());
-  const fingerprint=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),v=>v.toString(16).padStart(2,'0')).join('');if(job.fingerprint&&job.fingerprint!==fingerprint)throw Error('O arquivo foi alterado no computador. Selecione-o novamente.');job.fingerprint=fingerprint;
+  const bytes=await stage('Leitura do arquivo no computador',()=>withAudioTimeout(blob.arrayBuffer(),30000,'Tempo esgotado ao ler o áudio. Tente novamente.'));
+  const fingerprint=Array.from(new Uint8Array(await withAudioTimeout(crypto.subtle.digest('SHA-256',bytes),30000,'Tempo esgotado ao preparar o áudio. Tente novamente.')),v=>v.toString(16).padStart(2,'0')).join('');if(job.fingerprint&&job.fingerprint!==fingerprint)throw Error('O arquivo foi alterado no computador. Selecione-o novamente.');job.fingerprint=fingerprint;
   const snapshot=new Blob([bytes],{type:blob.type});
-  const {mime}=await stage('Validação do áudio',()=>inspectAudio(snapshot,filename));
+  const {mime}=await stage('Validação do áudio',()=>withAudioTimeout(inspectAudio(snapshot,filename),20000,'Tempo esgotado ao validar o áudio. Tente novamente.'));
   if(canDecode)await stage('Validação da reprodução',()=>checkPlayable(new Blob([bytes],{type:mime})));
   if(job.catalogAttempted){const existing=await stage('Confirmação do cadastro',reconcileRow);if(existing)return existing}
   await stage('Envio ao armazenamento',async()=>{
@@ -34,7 +34,7 @@ export function createLibraryTransfer({storage,find,insert,unwrap,wait=pause,mak
   return stage('Gravação do cadastro',async()=>{
    for(let attempt=0;attempt<3;attempt++){
     job.catalogAttempted=true;
-    try{job.result=await insert(row);return job.result}catch(error){const duplicate=error.code==='23505';if(!transientNetwork(error)&&!duplicate)throw error;const existing=await reconcileRow();if(existing)return existing;if(attempt===2)throw error;await wait(500*2**attempt)}
+    try{job.result=await withAudioTimeout(insert(row),30000,'Tempo esgotado ao confirmar o cadastro. Tente novamente.');return job.result}catch(error){const duplicate=error.code==='23505';if(!transientNetwork(error)&&!duplicate)throw error;const existing=await reconcileRow();if(existing)return existing;if(attempt===2)throw error;await wait(500*2**attempt)}
    }
   });
  };
