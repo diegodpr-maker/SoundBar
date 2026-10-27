@@ -1,3 +1,4 @@
+import {createSessionTransport} from './session-transport.js?v=48';
 import {accountLimits,validateAccountLimits} from './account-limits.js?v=47';
 import {transferPlaylistAudio} from './playlist-transfer.js?v=42';
 import {createResumableUploader} from './resumable-upload.js?v=33';
@@ -39,7 +40,7 @@ export function createBackend(client){const sharedJobs=new Map();let cachedUser=
  const u=await(adminUpload?withAudioTimeout(user(),20000,'Tempo esgotado ao verificar o acesso. Tente novamente.'):user());
  if(p==='/access')return accessState();
  if(p==='/me'){const access=await accessState();const data=access.status==='approved'?await profile():{id:u.id,email:u.email,display_name:text(u.user_metadata?.display_name)||text(u.email?.split('@')[0])||'Meu perfil'};return {profile:data,workspace:{id:u.id,name:data.workspace_name||'Meu estúdio'},access,limits:accountLimits(access.limits)}}
- const access=await (p==='/admin/library'&&method==='POST'?uploadStage('Verificação da conta',()=>retryRead(()=>withAudioTimeout(assertApproved(),20000,'Tempo esgotado ao verificar a conta. Tente novamente.'))):assertApproved());
+ const access=await (p==='/admin/library'&&method==='POST'?uploadStage('Verificação da conta',()=>withAudioTimeout(assertApproved(),20000,'Tempo esgotado ao verificar a conta. Tente novamente.')):assertApproved());
  const limits=accountLimits(access.limits);
  if(p==='/community')return result(await client.rpc('sb_browse_playlists'));
  const shared=/^\/shared\/([0-9a-f-]{36})(\/import)?$/.exec(p);
@@ -132,4 +133,4 @@ export function createBackend(client){const sharedJobs=new Map();let cachedUser=
  return {call,audioURL,downloadTrack,blobForTrack,user,profile,accessState,register,prepareAudio,client};
 }
 let instance;
-export async function getBackend(){if(!instance)instance=(async()=>{const {url,key}=validateConfig(globalThis.SOUNDBAR_CONFIG);const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2.57.4');return createBackend(createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,storageKey:'soundbar-supabase-session',flowType:'pkce'}}))})();try{return await instance}catch(e){instance=null;throw e}}
+export async function getBackend(){if(!instance)instance=(async()=>{const {url,key}=validateConfig(globalThis.SOUNDBAR_CONFIG);const {createClient}=await withAudioTimeout(import('https://esm.sh/@supabase/supabase-js@2.57.4'),15000,'Não foi possível carregar a conexão. Tente novamente.');return createBackend(createSessionTransport(createClient,{url,key}))})();try{return await instance}catch(e){instance=null;throw e}}

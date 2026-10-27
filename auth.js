@@ -1,4 +1,4 @@
-import {getBackend,validateConfig} from './backend.js?v=47';
+import {getBackend,validateConfig} from './backend.js?v=48';
 import {offlinePlaylists,isConnectionError} from './offline-playlists.js?v=46';
 const $=s=>document.querySelector(s);let mode='login',backend=null,openingStudio=false;
 const message=t=>{$('#auth-message').hidden=false;$('#auth-message').textContent=t};

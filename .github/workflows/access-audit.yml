@@ -1,0 +1,31 @@
+name: Full access and session audit
+on:
+  push:
+    branches: [main, feature/access-audit]
+    paths:
+      - '*.js'
+      - '*.html'
+      - '*.css'
+      - 'tests/*access*'
+      - 'tests/*session*'
+      - '.github/workflows/access-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: npm test && npm run check && node --check session-transport.js
+      - name: Install actual SDKs and browser driver
+        run: npm install --prefix /tmp/harmony-browser --ignore-scripts --no-audit --no-fund playwright@1.56.1 @supabase/supabase-js@2.57.4 tus-js-client@4.3.1
+      - name: Install Chromium
+        run: node /tmp/harmony-browser/node_modules/playwright/cli.js install chromium
+      - name: Audit real SDK with blocked session and all application pages
+        timeout-minutes: 3
+        run: node tests/verify-access-audit-browser.mjs /tmp/harmony-browser/node_modules/playwright /tmp/harmony-browser/node_modules/@supabase/supabase-js/dist/umd/supabase.js /tmp/harmony-browser/node_modules/tus-js-client/dist/tus.min.js
+      - name: Verify existing admin quotas, upload recovery and offline mode
+        timeout-minutes: 3
+        run: node tests/verify-account-limits-browser.mjs /tmp/harmony-browser/node_modules/playwright && node tests/verify-offline-browser.mjs /tmp/harmony-browser/node_modules/playwright && node tests/verify-account-deletion-browser.mjs /tmp/harmony-browser/node_modules/playwright

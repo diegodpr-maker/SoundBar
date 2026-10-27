@@ -1,6 +1,6 @@
 import {normalizeUploadError} from './upload-error.js?v=33';
 import {inspectAudio,checkPlayable,verifyStoredAudio,withAudioTimeout} from './audio-validation.js?v=17';
-export function transientNetwork(error){const status=Number(error?.status||error?.statusCode||error?.code);return error?.retryable===true||[408,429].includes(status)||status>=500||/falha na conexão|networkerror|failed to fetch|fetch failed|network request|load failed|tempo esgotado|timeout/i.test(error?.message||'')}
+export function transientNetwork(error){if(error?.retryable===false)return false;const status=Number(error?.status||error?.statusCode||error?.code);return error?.retryable===true||[408,429].includes(status)||status>=500||/falha na conexão|networkerror|failed to fetch|fetch failed|network request|load failed|tempo esgotado|timeout/i.test(error?.message||'')}
 const pause=ms=>new Promise(r=>setTimeout(r,ms));
 export async function retryRead(task,{wait=pause,attempts=3}={}){for(let i=0;;i++){try{return await task()}catch(error){if(i>=attempts-1||!transientNetwork(error))throw error;await wait(500*2**i)}}}
 export async function uploadStage(label,task){try{return await task()}catch(original){const cause=normalizeUploadError(original);const e=new Error(`${label}: ${cause.message}`);e.cause=cause;e.status=cause.status;e.stage=label;e.retryable=transientNetwork(cause);throw e}}
