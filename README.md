@@ -74,7 +74,7 @@ A biblioteca e a demonstração usam um elemento de áudio com controles nativos
 
 Ao abrir uma playlist, os áudios públicos conhecidos são preparados sem consultas adicionais. URLs privadas são geradas antecipadamente em lote, sujeitas às políticas do Storage. Até 64 MB são carregados em memória da sessão com duas transferências simultâneas; arquivos maiores continuam por streaming. O clique reutiliza o elemento de áudio preparado. A biblioteca também prepara as prévias. Aguarde “Áudios prontos” para obter a menor latência. Não há garantia de zero milissegundos no navegador nem de funcionamento instantâneo antes do primeiro carregamento.
 
-Os arquivos privados não são gravados em disco nem no cache do service worker. A memória é limpa ao sair da conta, fechar a página ou detectar bloqueio. Áudios em reprodução continuam ao trocar de playlist quando essa opção está habilitada.
+O pré-carregamento automático não persiste os arquivos privados nem os coloca no cache do service worker; o download explícito para uso offline é descrito abaixo. A memória é limpa ao sair da conta, fechar a página ou detectar bloqueio. Áudios em reprodução continuam ao trocar de playlist quando essa opção está habilitada.
 
 ## Modo evento e armazenamento local
 
