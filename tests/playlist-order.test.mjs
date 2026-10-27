@@ -1,0 +1,3 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {mergePlaylistOrder} from '../playlist-order.js';
+test('full playlist reorder and dashboard subsets preserve every non-visible playlist',()=>{assert.deepEqual(mergePlaylistOrder(['a','b','c'],['c','a','b']),['c','a','b']);assert.deepEqual(mergePlaylistOrder(['a','hidden','b','c','other'],['c','a','b']),['c','hidden','a','b','other']);assert.deepEqual(mergePlaylistOrder(['a','b'],[]),['a','b'])});
+test('duplicate, unknown and invalid IDs cannot corrupt playlist membership',()=>{for(const [all,visible]of [[['a','b'],['a','a']],[['a','a'],['a']],[['a','b'],['foreign']],[null,[]],[[],null]])assert.throws(()=>mergePlaylistOrder(all,visible),/Atualize/)});

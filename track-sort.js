@@ -13,11 +13,11 @@ export function nearestTrackId(items,x,y){
  return nearest;
 }
 
-export function attachTrackSort(root,{onCommit,isDisabled=()=>false,getIds}){
- const doc=root.ownerDocument,win=doc.defaultView;
+export function attachTrackSort(root,{onCommit,isDisabled=()=>false,getIds,handleSelector='.pad-drag',itemAttribute='data-track-id',idProperty='trackId'}){
+ const doc=root.ownerDocument,win=doc.defaultView,itemSelector='['+itemAttribute+']',idOf=card=>card.dataset[idProperty];
  let drag=null,frame=0;
  const measure=()=>{
-  drag.slots=drag.cards.map(card=>({id:card.dataset.trackId,rect:card.getBoundingClientRect()}));
+  drag.slots=drag.cards.map(card=>({id:idOf(card),rect:card.getBoundingClientRect()}));
   drag.scrollX=win.scrollX;drag.scrollY=win.scrollY;
  };
  const clear=()=>{
@@ -34,7 +34,7 @@ export function attachTrackSort(root,{onCommit,isDisabled=()=>false,getIds}){
  function preview(ids){
   const before=new Map(drag.cards.map(card=>[card,card.getBoundingClientRect()]));
   drag.animations.forEach(a=>a.cancel());drag.animations=[];
-  for(const card of drag.cards)card.style.order=String(ids.indexOf(card.dataset.trackId));
+  for(const card of drag.cards)card.style.order=String(ids.indexOf(idOf(card)));
   drag.ids=ids;measure();
   if(win.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
   for(const card of drag.cards){
@@ -45,7 +45,7 @@ export function attachTrackSort(root,{onCommit,isDisabled=()=>false,getIds}){
  }
  function start(){
   const ghost=drag.source.cloneNode(true);
-  ghost.removeAttribute('id');ghost.removeAttribute('data-track-id');
+  ghost.removeAttribute('id');ghost.removeAttribute(itemAttribute);
   for(const node of ghost.querySelectorAll('[id]'))node.removeAttribute('id');
   ghost.setAttribute('aria-hidden','true');ghost.inert=true;
   ghost.classList.remove('sorting');ghost.classList.add('drag-ghost');
@@ -64,8 +64,8 @@ export function attachTrackSort(root,{onCommit,isDisabled=()=>false,getIds}){
   // Ignore visual animation when choosing a destination, so targets stay stable.
   const dx=win.scrollX-drag.scrollX,dy=win.scrollY-drag.scrollY;
   const target=nearestTrackId(drag.slots,x+dx,y+dy);
-  if(target&&target!==drag.source.dataset.trackId){
-   const ids=moveTrackIds(drag.ids,drag.source.dataset.trackId,target);
+  if(target&&target!==idOf(drag.source)){
+   const ids=moveTrackIds(drag.ids,idOf(drag.source),target);
    if(ids.some((id,i)=>id!==drag.ids[i]))preview(ids);
   }
  }
@@ -81,11 +81,11 @@ export function attachTrackSort(root,{onCommit,isDisabled=()=>false,getIds}){
   frame=win.requestAnimationFrame(tick);
  }
  root.addEventListener('pointerdown',e=>{
-  const handle=e.target.closest('.pad-drag');
+  const handle=e.target.closest(handleSelector);
   if(drag||!handle||isDisabled()||e.button!==0||!e.isPrimary)return;
-  const source=handle.closest('[data-track-id]');if(!source)return;
-  const grid=source.parentElement,cards=[...grid.querySelectorAll('[data-track-id]')],ids=getIds();
-  if(cards.length!==ids.length||cards.some(card=>!ids.includes(card.dataset.trackId)))return;
+  const source=handle.closest(itemSelector);if(!source)return;
+  const grid=source.parentElement,cards=[...grid.querySelectorAll(itemSelector)],ids=getIds();
+  if(cards.length!==ids.length||cards.some(card=>!ids.includes(idOf(card))))return;
   e.preventDefault();const rect=source.getBoundingClientRect();
   drag={handle,source,grid,cards,rect,pointer:e.pointerId,original:[...ids],ids:[...ids],orders:new Map(cards.map(card=>[card,card.style.order])),animations:[],x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY,offsetX:e.clientX-rect.left,offsetY:e.clientY-rect.top,active:false,moved:false,inside:true};
   handle.setPointerCapture(e.pointerId);handle.setAttribute('aria-pressed','false');
@@ -114,18 +114,18 @@ export function attachTrackSort(root,{onCommit,isDisabled=()=>false,getIds}){
   if(!drag||e.pointerId!==drag.pointer)return;
   if(!drag.source.isConnected||isDisabled()){clear();return}
   if(!drag.active){clear();return}
-  move(e);const ids=[...drag.ids],from=drag.source.dataset.trackId;
+  move(e);const ids=[...drag.ids],from=idOf(drag.source);
   const changed=drag.moved&&drag.inside&&ids.some((id,i)=>id!==drag.original[i]);
   clear();if(changed)onCommit(ids,from);
  });
  const cancelPointer=e=>{if(drag&&e.pointerId===drag.pointer)clear()};
  root.addEventListener('pointercancel',cancelPointer);root.addEventListener('lostpointercapture',cancelPointer);
- root.addEventListener('click',e=>{if(e.target.closest('.pad-drag')){e.preventDefault();e.stopImmediatePropagation()}},true);
- root.addEventListener('contextmenu',e=>{if(e.target.closest('.pad-drag'))e.preventDefault()});
+ root.addEventListener('click',e=>{if(e.target.closest(handleSelector)){e.preventDefault();e.stopImmediatePropagation()}},true);
+ root.addEventListener('contextmenu',e=>{if(e.target.closest(handleSelector))e.preventDefault()});
  root.addEventListener('keydown',e=>{
-  const handle=e.target.closest('.pad-drag');if(!handle||isDisabled()||drag)return;
+  const handle=e.target.closest(handleSelector);if(!handle||isDisabled()||drag)return;
   const delta={ArrowLeft:-1,ArrowUp:-1,ArrowRight:1,ArrowDown:1}[e.key];if(!delta)return;
-  e.preventDefault();const ids=getIds(),id=handle.closest('[data-track-id]').dataset.trackId,to=ids.indexOf(id)+delta;
+  e.preventDefault();const ids=getIds(),id=idOf(handle.closest(itemSelector)),to=ids.indexOf(id)+delta;
   if(to>=0&&to<ids.length)onCommit(moveTrackIds(ids,id,ids[to]),id);
  });
  win.addEventListener('blur',clear);win.addEventListener('resize',clear);

@@ -218,3 +218,10 @@ O resultado de importação pode ser fechado após o lote. Envios concluídos s�
 ### Arquivos privados de até 30 MB
 
 Aplicar `supabase/audio_file_limit.sql` após as migrações de cota e contribuições. O limite por áudio passa a 31.457.280 bytes em playlists, conversão WMA e cópias enviadas à moderação. Os dois buckets privados, as restrições de tamanho das tabelas e as funções de quota usam o mesmo valor. A biblioteca pública continua com seu limite administrativo de 50 MB; a cota privada permanece 1 GB e a cota de contribuições permanece 100 MB. A validação de backup permite até 30 MB por áudio e conserva a proteção total de memória de 200 MB.
+
+### Ordem das playlists
+A alça ⠿ dos cards permite organizar as playlists pelo mesmo gesto das faixas: pressão contínua de 500 ms, sem indicação visual de tempo, seguida de arraste com transparência e aproximação das posições. O clique no card continua abrindo a playlist. As setas do teclado funcionam quando a alça está focada. A tela de playlists mostra a lista completa; a visão geral mostra as seis primeiras. Reordenar um subconjunto (visão geral ou downloads) preserva as demais posições. Falhas na gravação restauram a ordem anterior.
+
+Aplicar `supabase/playlist_positions.sql` após as migrações anteriores. O campo `sb_playlists.position` é inicializado na ordem de atualização anterior, sem alterar os timestamps de conteúdo. Novas playlists, inclusive importadas, entram no final, sob o mesmo bloqueio por perfil usado pelas cotas. A RPC `sb_reorder_playlists` é SECURITY INVOKER, exclusiva de contas aprovadas, valida exatamente o conjunto de IDs do proprietário e grava tudo em uma transação. O índice começa por user_id. O teste SQL usa ROLLBACK e verifica duplicatas, lista incompleta, NULL, outro usuário, pendentes e anônimos.
+
+A ordem é salva na conta e copiada ao documento local das playlists baixadas; o gesto requer conexão, como as edições de faixas. Ao reabrir offline, os downloads seguem a última ordem sincronizada. Redownload não muda essa ordem nem a sequência das músicas.
