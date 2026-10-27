@@ -1,0 +1,32 @@
+name: Administrator notification verification
+on:
+  push:
+    branches: [main, feature/admin-notifications]
+    paths:
+      - 'admin-notifications.js'
+      - 'supabase/functions/admin-push/**'
+      - 'tests/admin-notifications.test.mjs'
+      - 'tests/admin-push-server.test.mjs'
+      - 'tests/verify-push-runtime.mjs'
+      - 'tests/verify-admin-notifications-browser.mjs'
+      - '.github/workflows/admin-push.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: npm test && npm run check && node --check sw.js && node --check admin-notifications.js
+      - name: Install pinned Web Push library
+        run: npm install --prefix /tmp/harmony-push --ignore-scripts --no-audit --no-fund web-push@3.6.7
+      - name: Verify real payload encryption and decryption
+        run: node tests/verify-push-runtime.mjs /tmp/harmony-push/node_modules/web-push
+      - name: Install mobile browser driver
+        run: npm install --prefix /tmp/harmony-browser --ignore-scripts --no-audit --no-fund playwright@1.56.1
+      - name: Install Chromium
+        run: node /tmp/harmony-browser/node_modules/playwright/cli.js install chromium
+      - name: Verify administrator notification controls
+        run: node tests/verify-admin-notifications-browser.mjs /tmp/harmony-browser/node_modules/playwright

@@ -1,0 +1,3 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {normalizeUploadError} from '../upload-error.js';import {uploadStage} from '../upload-transfer.js';
+test('serialized empty SDK errors recover nested cause and HTTP status',()=>{const e=normalizeUploadError({message:'{}',cause:{originalError:{message:'Failed to fetch',statusCode:503}}});assert.equal(e.message,'Failed to fetch');assert.equal(e.status,503)});
+test('opaque responses produce an actionable fallback rather than empty JSON',async()=>{assert.match(normalizeUploadError({message:'{}',status:400}).message,/HTTP 400/);await assert.rejects(()=>uploadStage('Envio ao armazenamento',async()=>{throw{message:'{}'}}),/falha sem detalhes/)});

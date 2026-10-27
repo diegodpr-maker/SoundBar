@@ -1,0 +1,333 @@
+{
+  "source": "https://www.opacificador.com.br/node/56",
+  "assets": [
+    {
+      "id": 1,
+      "source_url": "https://www.opacificador.com.br/music/1%20-%20Entrada%20em%20Loja%20-%20Hino%20a%20Maconaria.mp3",
+      "path": "opacificador/01.mp3"
+    },
+    {
+      "id": 2,
+      "source_url": "https://www.opacificador.com.br/music/2%20-%20Abertura%20-%20Cavalaria%20Ligeira.mp3",
+      "path": "opacificador/02.mp3"
+    },
+    {
+      "id": 3,
+      "source_url": "https://www.opacificador.com.br/music/4%20-%20Livro%20da%20Lei%20-%20Jesus%20Alegria%20dos%20Homens.mp3",
+      "path": "opacificador/03.mp3"
+    },
+    {
+      "id": 4,
+      "source_url": "https://www.opacificador.com.br/music/5%20-%20Ave%20Maria%20de%20Gounod.mp3",
+      "path": "opacificador/04.mp3"
+    },
+    {
+      "id": 5,
+      "source_url": "https://www.opacificador.com.br/music/7%20-%20Hino%20Nacional.mp3",
+      "path": "opacificador/05.mp3"
+    },
+    {
+      "id": 6,
+      "source_url": "https://www.opacificador.com.br/music/8%20-%20Tema%20para%20question%C3%A1rio.mp3",
+      "path": "opacificador/06.mp3"
+    },
+    {
+      "id": 7,
+      "source_url": "https://www.opacificador.com.br/music/9%20-%20Batem%20Prof.%C2%B7.%20a%20porta%20do%20Templo%20-%20%20Acorde%20Suspense.mp3",
+      "path": "opacificador/07.mp3"
+    },
+    {
+      "id": 8,
+      "source_url": "https://www.opacificador.com.br/music/11%20-%20Ora%C3%A7%C3%A3o%20-%20Ave%20Maria.mp3",
+      "path": "opacificador/08.mp3"
+    },
+    {
+      "id": 9,
+      "source_url": "https://www.opacificador.com.br/music/12%20-%20Tema%20para%20ir%20ao%20Altar%20do%20V.%C2%B7.%20M.%C2%B7.%20-%20%20Concerto%20di%20Natale.mp3",
+      "path": "opacificador/09.mp3"
+    },
+    {
+      "id": 10,
+      "source_url": "https://www.opacificador.com.br/music/13%20-%20Ta%C3%A7a%20Sagrada%20-%20Sinfonia%205.mp3",
+      "path": "opacificador/10.mp3"
+    },
+    {
+      "id": 11,
+      "source_url": "https://www.opacificador.com.br/music/14%20-%201%C2%AA%20Viagem%20-%20Trovoadas.mp3",
+      "path": "opacificador/11.mp3"
+    },
+    {
+      "id": 12,
+      "source_url": "https://www.opacificador.com.br/music/15%20-%202%C2%AA%20Viagem%20-%20Espadas%20.mp3",
+      "path": "opacificador/12.mp3"
+    },
+    {
+      "id": 13,
+      "source_url": "https://www.opacificador.com.br/music/16%20-%20Purificacao%20Agua.mp3",
+      "path": "opacificador/13.mp3"
+    },
+    {
+      "id": 14,
+      "source_url": "https://www.opacificador.com.br/music/18%20-%20Purifica%C3%A7%C3%A3o%20Fogo.mp3",
+      "path": "opacificador/14.mp3"
+    },
+    {
+      "id": 15,
+      "source_url": "https://www.opacificador.com.br/music/19%20-%20Levar%20Candidatos%20entre%20Colunas.mp3",
+      "path": "opacificador/15.mp3"
+    },
+    {
+      "id": 16,
+      "source_url": "https://www.opacificador.com.br/music/21%20-%20Tema%20para%20levar%20Candidato%20a%20recompor.mp3",
+      "path": "opacificador/16.mp3"
+    },
+    {
+      "id": 17,
+      "source_url": "https://www.opacificador.com.br/music/22%20-%20Luz%20-%202001%20Odiss%C3%A9ia%20no%20Espa%C3%A7o%20e%20Aleluia.mp3",
+      "path": "opacificador/17.mp3"
+    },
+    {
+      "id": 18,
+      "source_url": "https://www.opacificador.com.br/music/23%20-%20Levar%20candidato%20ao%20Altar%20dos%20Juramentos.mp3",
+      "path": "opacificador/18.mp3"
+    },
+    {
+      "id": 19,
+      "source_url": "https://www.opacificador.com.br/music/26-HINO%20BANDEIRA%201%20e%204.mp3",
+      "path": "opacificador/19.mp3"
+    },
+    {
+      "id": 20,
+      "source_url": "https://www.opacificador.com.br/music/Indiana%20Jones%20Theme%20Song%20%5BHD%5D%20%5B%20ezmp3.cc%20%5D.mp3",
+      "path": "opacificador/20.mp3"
+    },
+    {
+      "id": 21,
+      "source_url": "https://www.opacificador.com.br/music/JESUS%20IN%20ME%20-%20Instrumental%20Soaking%20Worship%20Music%20%2B%201Moment%20%5B%20ezmp3.cc%20%5D.mp3",
+      "path": "opacificador/21.mp3"
+    },
+    {
+      "id": 22,
+      "source_url": "https://www.opacificador.com.br/music/Luiz%20Gonzaga%20-%20Ac%C3%A1cia%20Amarela%20%28Instrumental%29%20%5B%20ezmp3.cc%20%5D.mp3",
+      "path": "opacificador/22.mp3"
+    },
+    {
+      "id": 23,
+      "source_url": "https://www.opacificador.com.br/music/Richard%20Clayderman%20%20Tema%20de%20Lara%20%5B%20ezmp3.cc%20%5D.mp3",
+      "path": "opacificador/23.mp3"
+    },
+    {
+      "id": 24,
+      "source_url": "https://www.opacificador.com.br/music/SOMEWHERE%20ONLY%20WE%20KNOW%20-%20KEANE%20%28instrumental%29%202020%20%5B%20ezmp3.cc%20%5D.mp3",
+      "path": "opacificador/24.mp3"
+    },
+    {
+      "id": 25,
+      "source_url": "https://www.opacificador.com.br/music/E.T.%20Theme%20Song%20%5B%20ezmp3.cc%20%5D.mp3",
+      "path": "opacificador/25.mp3"
+    },
+    {
+      "id": 26,
+      "source_url": "https://www.opacificador.com.br/music/GLADIATOR%20%28Now%20we%20are%20free%29%20%26%20TIME%20%28Inception%29%20-%20DAVID%20BAY%20_%20music%20by%20%40HansZimmer%20%5B%20ezmp3.cc%20%5D.mp3",
+      "path": "opacificador/26.mp3"
+    }
+  ],
+  "tracks": [
+    {
+      "id": "pacificador-iniciacao-01",
+      "name": "Entrada em Loja — Hino à Maçonaria",
+      "category": "Iniciação",
+      "assetId": 1,
+      "position": 0
+    },
+    {
+      "id": "pacificador-iniciacao-02",
+      "name": "Abertura — Cavalaria Ligeira",
+      "category": "Iniciação",
+      "assetId": 2,
+      "position": 1
+    },
+    {
+      "id": "pacificador-iniciacao-04",
+      "name": "Livro da Lei — Jesus Alegria dos Homens",
+      "category": "Iniciação",
+      "assetId": 3,
+      "position": 2
+    },
+    {
+      "id": "pacificador-iniciacao-05",
+      "name": "Ave Maria de Gounod",
+      "category": "Iniciação",
+      "assetId": 4,
+      "position": 3
+    },
+    {
+      "id": "pacificador-iniciacao-07",
+      "name": "Hino Nacional",
+      "category": "Iniciação",
+      "assetId": 5,
+      "position": 4
+    },
+    {
+      "id": "pacificador-iniciacao-08",
+      "name": "Tema para questionário",
+      "category": "Iniciação",
+      "assetId": 6,
+      "position": 5
+    },
+    {
+      "id": "pacificador-iniciacao-09",
+      "name": "Batem profanamente à porta do Templo — Acorde Suspense",
+      "category": "Iniciação",
+      "assetId": 7,
+      "position": 6
+    },
+    {
+      "id": "pacificador-iniciacao-11",
+      "name": "Oração — Ave Maria",
+      "category": "Iniciação",
+      "assetId": 8,
+      "position": 7
+    },
+    {
+      "id": "pacificador-iniciacao-12",
+      "name": "Tema para ir ao Altar do V.·. M.·.",
+      "category": "Iniciação",
+      "assetId": 9,
+      "position": 8
+    },
+    {
+      "id": "pacificador-iniciacao-13",
+      "name": "Taça Sagrada — Sinfonia 5",
+      "category": "Iniciação",
+      "assetId": 10,
+      "position": 9
+    },
+    {
+      "id": "pacificador-iniciacao-14",
+      "name": "1ª Viagem — Trovoadas",
+      "category": "Iniciação",
+      "assetId": 11,
+      "position": 10
+    },
+    {
+      "id": "pacificador-iniciacao-15",
+      "name": "2ª Viagem — Espadas",
+      "category": "Iniciação",
+      "assetId": 12,
+      "position": 11
+    },
+    {
+      "id": "pacificador-iniciacao-16",
+      "name": "Purificação da Água",
+      "category": "Iniciação",
+      "assetId": 13,
+      "position": 12
+    },
+    {
+      "id": "pacificador-iniciacao-18",
+      "name": "Purificação do Fogo",
+      "category": "Iniciação",
+      "assetId": 14,
+      "position": 13
+    },
+    {
+      "id": "pacificador-iniciacao-19",
+      "name": "Levar Candidatos entre Colunas",
+      "category": "Iniciação",
+      "assetId": 15,
+      "position": 14
+    },
+    {
+      "id": "pacificador-iniciacao-20",
+      "name": "Ave Maria",
+      "category": "Iniciação",
+      "assetId": 4,
+      "position": 15
+    },
+    {
+      "id": "pacificador-iniciacao-21",
+      "name": "Tema para levar Candidato a recompor",
+      "category": "Iniciação",
+      "assetId": 16,
+      "position": 16
+    },
+    {
+      "id": "pacificador-iniciacao-22",
+      "name": "Luz — 2001 Odisseia no Espaço e Aleluia",
+      "category": "Iniciação",
+      "assetId": 17,
+      "position": 17
+    },
+    {
+      "id": "pacificador-iniciacao-23",
+      "name": "Levar candidato ao Altar dos Juramentos",
+      "category": "Iniciação",
+      "assetId": 18,
+      "position": 18
+    },
+    {
+      "id": "pacificador-iniciacao-24",
+      "name": "Tronco de Beneficência",
+      "category": "Iniciação",
+      "assetId": 18,
+      "position": 19
+    },
+    {
+      "id": "pacificador-iniciacao-25",
+      "name": "Hino à Bandeira — 1ª e 4ª estrofes",
+      "category": "Iniciação",
+      "assetId": 19,
+      "position": 20
+    },
+    {
+      "id": "pacificador-normal-01",
+      "name": "Indiana Jones Theme Song — Instrumental",
+      "category": "Normal",
+      "assetId": 20,
+      "position": 21
+    },
+    {
+      "id": "pacificador-normal-02",
+      "name": "JESUS IN ME — Instrumental Soaking Worship Music",
+      "category": "Normal",
+      "assetId": 21,
+      "position": 22
+    },
+    {
+      "id": "pacificador-normal-03",
+      "name": "Luiz Gonzaga — Acácia Amarela (Instrumental)",
+      "category": "Normal",
+      "assetId": 22,
+      "position": 23
+    },
+    {
+      "id": "pacificador-normal-04",
+      "name": "Richard Clayderman — Tema de Lara",
+      "category": "Normal",
+      "assetId": 23,
+      "position": 24
+    },
+    {
+      "id": "pacificador-normal-05",
+      "name": "SOMEWHERE ONLY WE KNOW — KEANE (Instrumental)",
+      "category": "Normal",
+      "assetId": 24,
+      "position": 25
+    },
+    {
+      "id": "pacificador-normal-06",
+      "name": "E.T. Theme Song",
+      "category": "Normal",
+      "assetId": 25,
+      "position": 26
+    },
+    {
+      "id": "pacificador-normal-07",
+      "name": "GLADIATOR & TIME",
+      "category": "Normal",
+      "assetId": 26,
+      "position": 27
+    }
+  ]
+}

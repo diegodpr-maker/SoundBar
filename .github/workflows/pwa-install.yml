@@ -1,0 +1,25 @@
+name: Mobile installation invitation
+on:
+  push:
+    branches: [main, feature/pwa-install]
+    paths:
+      - 'pwa-install.*'
+      - 'tests/verify-install-browser.mjs'
+      - '.github/workflows/pwa-install.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: npm test && npm run check && node --check pwa-install.js
+      - name: Install browser driver
+        run: npm install --prefix /tmp/harmony-browser --ignore-scripts --no-audit --no-fund playwright@1.56.1
+      - name: Install Chromium
+        run: node /tmp/harmony-browser/node_modules/playwright/cli.js install chromium
+      - name: Verify installation invitation in mobile browser contexts
+        timeout-minutes: 2
+        run: node tests/verify-install-browser.mjs /tmp/harmony-browser/node_modules/playwright

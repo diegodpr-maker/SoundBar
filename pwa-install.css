@@ -1,0 +1,14 @@
+.pwa-install-card[hidden],.pwa-install-space[hidden]{display:none!important}
+.pwa-install-card{position:fixed;left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));bottom:calc(14px + env(safe-area-inset-bottom));z-index:8;display:flex;align-items:center;gap:10px;padding:14px 44px 14px 14px;max-width:480px;margin:auto;background:var(--panel,#111b29);color:var(--text,#edf3ff);border:1px solid var(--line,#425a7c);border-radius:20px;box-shadow:0 12px 40px #07162b30}
+.pwa-install-card img,.pwa-install-sheet img{border-radius:12px;flex:none}
+.pwa-install-copy{flex:1;min-width:0;display:grid;gap:5px}.pwa-install-copy strong{font-size:14px;line-height:1.4;letter-spacing:-.2px}.pwa-install-copy span{font-size:12px;line-height:1.4;color:var(--muted,#a6b6ce)}
+.pwa-install-card .btn{flex:none;min-height:44px;padding:10px 14px;font-size:13px}
+.pwa-install-close{position:absolute;top:0;right:0;display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:14px;background:transparent;color:inherit;font:26px/1 sans-serif;cursor:pointer}
+.pwa-install-card button:focus-visible,.pwa-install-sheet button:focus-visible{outline:3px solid var(--accent,#78b5ff);outline-offset:2px}
+.pwa-install-space{height:calc(116px + env(safe-area-inset-bottom))}
+.pwa-install-sheet{position:fixed;width:min(440px,calc(100% - 32px));max-height:85dvh;box-sizing:border-box;padding:28px;border:1px solid var(--line,#425a7c);border-radius:24px;background:var(--panel,#111b29);color:var(--text,#edf3ff);box-shadow:0 24px 80px #07162b40}
+.pwa-install-sheet::backdrop{background:#030a16aa;backdrop-filter:blur(4px)}
+.pwa-install-sheet h2{font-size:24px;letter-spacing:-.5px;margin:20px 0}.pwa-install-sheet ol{padding-left:22px;margin:0 0 24px;line-height:1.65;font-size:15px}.pwa-install-sheet li{padding-left:4px;margin:12px 0}.pwa-install-sheet .btn{width:100%;min-height:48px}
+[data-theme="light"] .pwa-install-card,[data-theme="light"] .pwa-install-sheet{background:#fff;color:#10233f;border-color:#7088a6}[data-theme="light"] .pwa-install-copy span{color:#425773}
+body.event-mode .pwa-install-card,body.event-mode .pwa-install-space,body.menu-open .pwa-install-card,body.transport-open .pwa-install-card,body.preview-open .pwa-install-card,body:has(dialog[open]) .pwa-install-card,body:has(input:focus,textarea:focus,select:focus) .pwa-install-card{display:none}
+@media(max-width:360px){.pwa-install-card{padding-left:10px;gap:8px}.pwa-install-card img{display:none}.pwa-install-copy strong{font-size:13px}}

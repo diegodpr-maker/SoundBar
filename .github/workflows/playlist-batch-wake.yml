@@ -1,0 +1,33 @@
+name: Playlist batch and event screen verification
+on:
+  push:
+    branches: [main, feature/playlist-batch-wake, feature/storage-limit, feature/audio-file-limit]
+    paths:
+      - 'app.js'
+      - 'app.html'
+      - 'backend.js'
+      - 'playlist-batch.js'
+      - 'playlist-transfer.js'
+      - 'event-wake-lock.js'
+      - 'themes.css'
+      - 'tests/*batch*'
+      - 'tests/playlist-transfer.test.mjs'
+      - 'tests/event-wake-lock.test.mjs'
+      - '.github/workflows/playlist-batch-wake.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: npm test && npm run check && node --check playlist-batch.js && node --check playlist-transfer.js && node --check event-wake-lock.js
+      - name: Install browser driver
+        run: npm install --prefix /tmp/harmony-browser --ignore-scripts --no-audit --no-fund playwright@1.56.1
+      - name: Install Chromium
+        run: node /tmp/harmony-browser/node_modules/playwright/cli.js install chromium
+      - name: Verify playlist imports and event screen
+        timeout-minutes: 2
+        run: node tests/verify-batch-wake-browser.mjs /tmp/harmony-browser/node_modules/playwright
