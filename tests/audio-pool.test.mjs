@@ -25,3 +25,5 @@ test('finishing or failing a background download never reloads a retained paused
   retained.delete(audio);p.stop('a');assert.equal(audio.currentTime,0);if(!failed)assert.equal(audio.src,'blob:late');p.clear();
  }
 });
+
+test('offline preparation never streams placeholder URLs and retains on-demand local files beyond memory budget',async()=>{let downloads=0;const p=createAudioPool({makeAudio:()=>new AudioMock(),maxBytes:5,loadBlob:async()=>{downloads++;return new Blob(['audio'])},makeURL:()=> 'blob:saved'});p.prepare([{id:'small',url:'offline:small',size:5,localOnly:true},{id:'large',url:'offline:large',size:30*1024*1024,localOnly:true}]);await tick();assert.equal(p.get('small').audio.src,'blob:saved');assert.equal(p.get('large').audio.src,'');assert.equal(p.get('large').state,'local');assert.equal(downloads,1);p.clear()});

@@ -1,0 +1,33 @@
+name: Offline playlists verification
+on:
+  push:
+    branches: [main, feature/offline-playlists]
+    paths:
+      - '*.js'
+      - '*.html'
+      - '*.css'
+      - 'manifest.webmanifest'
+      - 'tests/*offline*'
+      - 'tests/session-entry.test.mjs'
+      - 'tests/pages.test.mjs'
+      - '.github/workflows/offline-playlists.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: npm test && npm run check && node --check offline-playlists.js && node --check sw.js
+      - name: Install browser driver
+        run: npm install --prefix /tmp/harmony-browser --ignore-scripts --no-audit --no-fund playwright@1.56.1
+      - name: Install Chromium
+        run: node /tmp/harmony-browser/node_modules/playwright/cli.js install chromium
+      - name: Verify offline launch and real playback
+        timeout-minutes: 3
+        run: node tests/verify-offline-browser.mjs /tmp/harmony-browser/node_modules/playwright
+      - name: Verify existing mobile imports and event playback
+        timeout-minutes: 2
+        run: node tests/verify-batch-wake-browser.mjs /tmp/harmony-browser/node_modules/playwright && node tests/verify-event-playback-browser.mjs /tmp/harmony-browser/node_modules/playwright && node tests/verify-event-fader-browser.mjs /tmp/harmony-browser/node_modules/playwright
