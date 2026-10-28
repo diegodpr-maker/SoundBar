@@ -1,7 +1,7 @@
 import {createDeviceAudioCache} from './audio-device-cache.js?v=49';
 import {accountLimits,limitsFromForm,MiB,GiB,DEFAULT_LIMITS} from './account-limits.js?v=47';
 import {mergePlaylistOrder} from './playlist-order.js?v=46';
-import {offlinePlaylists,isConnectionError} from './offline-playlists.js?v=46';
+import {offlinePlaylists,isConnectionError} from './offline-playlists.js?v=50';
 import {playlistColorStyle} from './playlist-colors.js?v=43';
 import {createPlaylistBatch,runPlaylistBatch,batchCounts} from './playlist-batch.js?v=44';
 import {createEventWakeLock} from './event-wake-lock.js?v=42';
@@ -14,7 +14,7 @@ import {validateBackup} from './security-utils.js?v=47';
 import {initNavigation} from './app-navigation.js?v=48';
 import {uploadLibraryBatch,validateLibraryFiles,libraryFailureSummary,prepareLibraryFile} from './library-batch.js?v=47';
 import {attachTrackSort} from './track-sort.js?v=46';
-import {offlineAudio} from './offline-audio.js?v=45';
+import {offlineAudio} from './offline-audio.js?v=50';
 import {createAudioPool} from './audio-pool.js?v=49';
 import {createPreviewPlayer,previewMessage} from './audio-preview.js?v=33';
 import {getBackend} from './backend.js?v=48';

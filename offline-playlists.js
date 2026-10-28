@@ -1,4 +1,4 @@
-import {offlineAudio} from './offline-audio.js?v=45';
+import {offlineAudio} from './offline-audio.js?v=50';
 const POINTER='harmony-offline-owner',DOCUMENT='@playlists';
 const clone=value=>JSON.parse(JSON.stringify(value));
 // A local device session is intentionally separate from server authorization.
