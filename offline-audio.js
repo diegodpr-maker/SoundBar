@@ -7,10 +7,12 @@ async function key(owner,create=false){let k=await access('keys','readonly',s=>s
 
 export async function seal(blob,key,aad){const iv=crypto.getRandomValues(new Uint8Array(12));return{iv,type:blob.type,data:await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:new TextEncoder().encode(aad)},key,await blob.arrayBuffer())}}
 export async function unseal(record,key,aad){return new Blob([await crypto.subtle.decrypt({name:'AES-GCM',iv:record.iv,additionalData:new TextEncoder().encode(aad)},key,record.data)],{type:record.type})}
+async function reference(owner,id){const record=await access('audio','readonly',s=>s.get([owner,'@ref:'+id]));if(!record)return null;const k=await key(owner);if(!k)return null;const target=JSON.parse(await(await unseal(record,k,owner+':@ref:'+id)).text());return typeof target==='string'&&!target.startsWith('@ref:')&&target!=='@playlists'?target:null}
 export const offlineAudio={
- async has(owner,id){try{return !!await access('audio','readonly',s=>s.getKey([owner,id]))}catch{return false}},
+ async has(owner,id){try{if(await access('audio','readonly',s=>s.getKey([owner,id])))return true;const target=await reference(owner,id);return !!target&&!!await access('audio','readonly',s=>s.getKey([owner,target]))}catch{return false}},
  async save(owner,id,blob){const epoch=generations.get(owner)||0;const k=await key(owner,true);const record=await seal(blob,k,owner+':'+id);if(epoch!==(generations.get(owner)||0))throw Error('Sessão alterada.');await access('audio','readwrite',s=>s.put(record,[owner,id]))},
- async load(owner,id){try{const record=await access('audio','readonly',s=>s.get([owner,id]));if(!record)return null;const k=await key(owner);return k?await unseal(record,k,owner+':'+id):null}catch{return null}},
- async remove(owner,id){await access('audio','readwrite',s=>s.delete([owner,id]))},
+ async load(owner,id){try{let target=id,record=await access('audio','readonly',s=>s.get([owner,id]));if(!record){target=await reference(owner,id);if(!target)return null;record=await access('audio','readonly',s=>s.get([owner,target]))}if(!record)return null;const k=await key(owner);return k?await unseal(record,k,owner+':'+target):null}catch{return null}},
+ async alias(owner,id,target){const epoch=generations.get(owner)||0;if(id===target)return;if(!await this.has(owner,target))throw Error('Áudio não disponível no dispositivo.');if(epoch!==(generations.get(owner)||0))throw Error('Sessão alterada.');await this.save(owner,'@ref:'+id,new Blob([JSON.stringify(target)],{type:'application/json'}))},
+ async remove(owner,id){await access('audio','readwrite',s=>s.delete([owner,id]));await access('audio','readwrite',s=>s.delete([owner,'@ref:'+id]))},
  async clear(owner){generations.set(owner,(generations.get(owner)||0)+1);await creating.get(owner);const database=await db();await new Promise((resolve,reject)=>{const tx=database.transaction(['audio','keys'],'readwrite');tx.objectStore('keys').delete(owner);const r=tx.objectStore('audio').openCursor();r.onsuccess=()=>{const c=r.result;if(c){if(c.key[0]===owner)c.delete();c.continue()}};tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)})}
 };

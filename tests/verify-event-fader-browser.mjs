@@ -20,7 +20,7 @@ async function fixture(readonlyVolume=false){
  await context.route('**/*',async route=>{const url=new URL(route.request().url());if(url.hostname!=='harmony-fader.test')return route.fulfill({status:204,body:''});if(url.pathname==='/backend.js')return route.fulfill({contentType:'text/javascript',body:backend});if(tones[url.pathname])return route.fulfill({contentType:'audio/wav',body:tones[url.pathname]});
   try{const file=new URL('.'+url.pathname,root);if(!fileURLToPath(file).startsWith(fileURLToPath(root)))throw Error('path');return route.fulfill({contentType:url.pathname.endsWith('.html')?'text/html; charset=utf-8':url.pathname.endsWith('.js')?'text/javascript; charset=utf-8':url.pathname.endsWith('.css')?'text/css; charset=utf-8':'application/octet-stream',body:readFileSync(file)})}catch{return route.fulfill({status:404,body:''})}
  });
- const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('https://harmony-fader.test/app.html#studio/event');await page.waitForFunction(()=>document.querySelector('#audio-ready')?.textContent==='Áudios prontos');return{page,errors};
+ const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('https://harmony-fader.test/app.html#studio/event');await page.locator('[data-action="play"]').last().waitFor();return{page,errors};
 }
 const playing=page=>page.evaluate(()=>window.testAudios.filter(a=>!a.paused&&!a.ended).length);
 const gains=page=>page.evaluate(()=>window.testAudios.filter(a=>!a.paused&&!a.ended).map(a=>({gain:window.testNodes.get(a)?.gain.value,time:a.currentTime,src:a.src})));
