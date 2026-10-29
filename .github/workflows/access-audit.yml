@@ -11,6 +11,7 @@ on:
       - 'tests/*egress*'
       - 'tests/*categories*'
       - 'tests/*plans*'
+      - 'tests/*offline*'
       - 'tests/*limits*'
       - '.github/workflows/access-audit.yml'
   workflow_dispatch:
