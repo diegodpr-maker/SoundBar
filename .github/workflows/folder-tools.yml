@@ -1,0 +1,20 @@
+name: Windows folder preparation verification
+on:
+  push:
+    branches: [main, feature/access-audit]
+    paths:
+      - 'tools/pastas-windows/**'
+      - 'tests/windows/**'
+      - '.github/workflows/folder-tools.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Verify actual Windows folder renames and undo
+        shell: powershell
+        run: '& ./tests/windows/verify-folder-rename.ps1'

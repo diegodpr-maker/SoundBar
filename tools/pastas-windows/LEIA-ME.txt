@@ -1,0 +1,32 @@
+HARMONY - PREPARAR PASTAS NO WINDOWS
+
+1. Extraia este kit em uma pasta pequena fora da coletanea de musicas.
+2. Abra "Renomear Pastas.cmd" com dois cliques.
+3. Confira a previa. Digite RENOMEAR somente quando os nomes estiverem corretos.
+
+Uma janela abre para voce selecionar a pasta descompactada que contem as musicas.
+Nao selecione o arquivo ZIP de 3 GB: use a pasta que contem as musicas e subpastas.
+
+Exemplos:
+013-Ordem do Dia -> Ordem do Dia
+010-Entrega Bolsa de Proposiçoes -> Entrega Bolsa de Proposicoes
+002-Meditação & Reflexão! -> Meditacao Reflexao
+
+As regras removem acentos, numeros e pontuacao de todos os nomes de PASTAS,
+inclusive a pasta escolhida. Letras, espacos entre palavras e maiusculas ficam.
+Os nomes e conteudos dos arquivos de musica permanecem iguais.
+O processo renomeia pastas; nao cria outra copia dos 3 GB e nao faz uploads.
+Se dois nomes ficarem iguais, nada e renomeado. Ajuste um desses nomes e tente de novo.
+Pastas que sejam atalhos/juncoes nao sao percorridas.
+
+Um relatorio CSV e salvo ao lado da pasta original, fora da coletanea.
+Para desfazer, execute "Restaurar Nomes.cmd" e selecione esse relatorio.
+Se o processo parar, guarde o CSV: ele registra as pastas ja renomeadas.
+
+DEPOIS
+Envie o conteudo da coletanea para a pasta musicas-harmony no cPanel.
+Para 3 GB, prefira FTP ou SFTP, mantendo a estrutura de subpastas.
+Endereco combinado: https://sysmacom.com.br/musicas-harmony/
+Nao envie este kit, os scripts ou o relatorio CSV junto com os audios.
+Os nomes dos arquivos ainda podem ter acentos/espacos: o importador devera
+codificar cada parte do endereco corretamente, sem exigir que voce os altere.
