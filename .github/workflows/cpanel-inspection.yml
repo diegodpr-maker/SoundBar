@@ -1,0 +1,18 @@
+name: Inspect cPanel music folder
+on:
+  push:
+    branches: [feature/access-audit]
+    paths:
+      - 'tools/cpanel/inspect-library.mjs'
+      - '.github/workflows/cpanel-inspection.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Inspect requested public folder and audio headers
+        run: node tools/cpanel/inspect-library.mjs
