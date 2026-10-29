@@ -4,6 +4,8 @@ on:
     branches: [main, feature/access-audit]
     paths:
       - 'tools/pastas-windows/**'
+      - 'tools/catalogo-windows/**'
+      - 'downloads/Harmony-Gerar-Catalogo.zip'
       - 'downloads/Harmony-Preparar-Pastas.zip'
       - 'tests/windows/**'
       - '.github/workflows/folder-tools.yml'
@@ -25,3 +27,12 @@ jobs:
           $destination = Join-Path $env:RUNNER_TEMP 'harmony-download-test'
           Expand-Archive -LiteralPath ./downloads/Harmony-Preparar-Pastas.zip -DestinationPath $destination
           & ./tests/windows/verify-folder-rename.ps1 -ToolsRoot (Join-Path $destination 'Harmony-Preparar-Pastas')
+      - name: Verify local file catalogue without reading or uploading audio
+        shell: powershell
+        run: '& ./tests/windows/verify-local-catalog.ps1'
+      - name: Verify the distributed catalogue generator ZIP
+        shell: powershell
+        run: |
+          $destination = Join-Path $env:RUNNER_TEMP 'harmony-catalog-test'
+          Expand-Archive -LiteralPath ./downloads/Harmony-Gerar-Catalogo.zip -DestinationPath $destination
+          & ./tests/windows/verify-local-catalog.ps1 -ToolsRoot (Join-Path $destination 'Harmony-Gerar-Catalogo')

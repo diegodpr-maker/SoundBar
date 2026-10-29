@@ -1,0 +1,22 @@
+HARMONY - LISTAGEM LOCAL PARA OS AUDIOS DO CPANEL
+
+1. Extraia este pequeno kit.
+2. Abra "Gerar Catalogo.cmd".
+3. Selecione "Entrega Bolsa de Proposicoes", que contem as pastas de categorias.
+   Use a pasta que contem Abertura Trabalhos e as demais categorias.
+4. Salve o JSON no local sugerido e anexe SOMENTE esse JSON no chat.
+
+O endereco combinado e https://sysmacom.com.br/musicas-harmony/.
+O CONTEUDO da pasta escolhida corresponde a musicas-harmony no servidor.
+O nome da pasta principal nao e acrescentado aos links. Exemplo:
+Abertura Trabalhos\Minha musica.mp3
+vira https://sysmacom.com.br/musicas-harmony/Abertura%20Trabalhos/Minha%20musica.mp3
+
+Os nomes e a estrutura local devem ser os mesmos usados na hospedagem.
+Os caminhos dos links preservam maiusculas, espacos, pontuacao e acentos reais,
+codificados corretamente. A categoria remove a numeracao inicial do nome da pasta.
+
+O programa so consulta nomes e tamanhos. Nao le o conteudo dos audios,
+nao renomeia arquivos ou pastas, nao faz uploads e nao precisa de internet.
+O JSON nao inclui o caminho C:\Users\... nem as musicas.
+Arquivos WMA e audios maiores que 50 MB aparecem na lista de ajustes.
