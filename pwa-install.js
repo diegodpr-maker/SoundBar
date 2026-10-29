@@ -35,7 +35,7 @@
     card.className = 'pwa-install-card';
     card.hidden = true;
     card.setAttribute('aria-label', 'Instalar Harmony');
-    card.innerHTML = '<img src="harmony-icon-192.png" width="44" height="44" alt=""><div class="pwa-install-copy"><strong>Harmony no seu celular</strong><span>Seu estúdio na tela inicial.</span></div><button type="button" class="btn primary small" data-install>Instalar</button><button type="button" class="pwa-install-close" data-dismiss aria-label="Dispensar convite de instalação">×</button>';
+    card.innerHTML = '<img src="harmony-rgb-192.png" width="44" height="44" alt=""><div class="pwa-install-copy"><strong>Harmony no seu celular</strong><span>Seu estúdio na tela inicial.</span></div><button type="button" class="btn primary small" data-install>Instalar</button><button type="button" class="pwa-install-close" data-dismiss aria-label="Dispensar convite de instalação">×</button>';
     spacer = document.createElement('div');
     spacer.className = 'pwa-install-space';
     spacer.hidden = true;
@@ -43,7 +43,7 @@
     sheet = document.createElement('dialog');
     sheet.className = 'pwa-install-sheet';
     sheet.setAttribute('aria-labelledby', 'pwa-install-title');
-    sheet.innerHTML = '<button type="button" class="pwa-install-close" data-close aria-label="Fechar instruções">×</button><img src="harmony-icon-192.png" width="56" height="56" alt=""><h2 id="pwa-install-title">Instale o Harmony</h2><ol><li>Abra esta página no <strong>Safari</strong>.</li><li>Toque em <strong>Compartilhar</strong> (quadrado com seta para cima).</li><li>Escolha <strong>Adicionar à Tela de Início</strong> e toque em <strong>Adicionar</strong>.</li></ol><button type="button" class="btn primary" data-done>Entendi</button>';
+    sheet.innerHTML = '<button type="button" class="pwa-install-close" data-close aria-label="Fechar instruções">×</button><img src="harmony-rgb-192.png" width="56" height="56" alt=""><h2 id="pwa-install-title">Instale o Harmony</h2><ol><li>Abra esta página no <strong>Safari</strong>.</li><li>Toque em <strong>Compartilhar</strong> (quadrado com seta para cima).</li><li>Escolha <strong>Adicionar à Tela de Início</strong> e toque em <strong>Adicionar</strong>.</li></ol><button type="button" class="btn primary" data-done>Entendi</button>';
     document.body.append(spacer, card, sheet);
     action = card.querySelector('[data-install]');
     message = card.querySelector('.pwa-install-copy span');

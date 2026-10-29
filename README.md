@@ -294,3 +294,9 @@ O administrador abre Gerenciar áudios → Renomear categoria, seleciona o nome 
 A tabela privada `sb_library_category_names` guarda o mapeamento de nomes de pastas para nomes exibidos; renomeações sucessivas atualizam o destino existente. O campo de categoria do histórico de fontes acompanha o novo rótulo, sem alterar URLs. Nas próximas importações, consultar essa tabela e passar os pares `source_name`/`display_name` como quarto argumento de `buildImportPlan` (ou quinto caminho de entrada na CLI, depois do arquivo de saída). Assim, novos arquivos dentro de uma pasta antiga recebem o nome atual, sem recriar a categoria anterior.
 
 Os testes SQL de renomeação usam fixtures com rollback: administrador aprovado, membro com metadata forjada, anônimo, administrador pendente, alteração principal/secundária, nomes inválidos/conflitantes, reversão, cadeia de aliases e integridade de playlists/URLs/estado de retirada. Nenhum nome real de categoria é alterado no teste.
+
+### Identidade RGB e simplificação da playlist — v54
+
+O ícone mantém o H azul e usa barras laterais em vermelho, verde e azul. Manifesto, instalação, favicon, splash e notificações usam os novos arquivos de ícone; a identidade e o início do PWA permanecem os mesmos. O cache público passa para v54 e remove o conteúdo antigo na ativação. Os ícones legados PNG também recebem a nova arte para referências antigas.
+
+A playlist mantém o botão superior da biblioteca e os atalhos funcionais, sem o link redundante ou a legenda de atalhos ao final. A página de créditos e seu módulo foram removidos, assim como seus links e entradas de cache. Os créditos associados a cada áudio continuam no catálogo.
