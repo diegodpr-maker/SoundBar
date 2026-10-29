@@ -1,0 +1,25 @@
+name: cPanel catalogue verification
+on:
+  push:
+    branches: [main, feature/access-audit]
+    paths:
+      - 'tools/cpanel/kit/**'
+      - 'tests/cpanel/**'
+      - 'downloads/Harmony-Conectar-cPanel.zip'
+      - '.github/workflows/cpanel-tools.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Verify PHP catalogue is read only and bounded to its music directory
+        run: php -l tools/cpanel/kit/harmony-catalogo.php && php tests/cpanel/verify-catalog.php
+      - name: Verify the downloadable cPanel ZIP
+        run: |
+          mkdir -p /tmp/harmony-cpanel-zip
+          unzip -q downloads/Harmony-Conectar-cPanel.zip -d /tmp/harmony-cpanel-zip
+          php tests/cpanel/verify-catalog.php /tmp/harmony-cpanel-zip/harmony-catalogo.php

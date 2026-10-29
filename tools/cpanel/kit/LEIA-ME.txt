@@ -1,0 +1,27 @@
+HARMONY - CONECTAR OS AUDIOS DO CPANEL
+
+Use o Gerenciador de arquivos do cPanel na pasta do endereco:
+https://sysmacom.com.br/musicas-harmony/
+Geralmente ela fica em public_html/musicas-harmony.
+
+1. Envie harmony-catalogo.php para essa pasta, ao lado das pastas de musicas.
+2. Se NAO existir .htaccess nessa pasta, renomeie acesso-harmony.txt para .htaccess.
+   Se JA existir, adicione o conteudo de acesso-harmony.txt ao final do arquivo
+   existente, preservando as configuracoes que ele ja tem.
+   No cPanel, ative "Mostrar arquivos ocultos" para conseguir ver .htaccess.
+3. Confira este endereco no navegador:
+   https://sysmacom.com.br/musicas-harmony/harmony-catalogo.php
+
+O resultado deve mostrar "files" seguido dos nomes dos audios que ja foram enviados.
+O catalogo le somente nomes, tamanhos e pastas; nao recebe arquivos nem remove nada.
+As regras de acesso permitem ao Harmony ouvir e salvar os audios no dispositivo.
+Nao e necessario ativar a listagem publica de diretorios do servidor.
+
+As musicas devem continuar dentro das subpastas; preserve nomes e estrutura.
+O ZIP deste kit e pequeno. Ele NAO contem suas musicas.
+Nao envie o ZIP de 3 GB pelo chat.
+
+Se abrir erro 500 depois de alterar .htaccess, restaure a copia anterior do arquivo
+ou remova somente o bloco adicionado e solicite suporte da hospedagem para CORS.
+O arquivo PHP exige PHP 7.2 ou mais recente.
+Os arquivos de audio e o catalogo ficam disponiveis publicamente por seus links.

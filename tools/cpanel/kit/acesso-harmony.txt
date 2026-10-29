@@ -1,0 +1,18 @@
+# Apply inside public_html/musicas-harmony only.
+# If .htaccess already exists, append this block; preserve its other settings.
+<IfModule mod_headers.c>
+    Header always set Access-Control-Allow-Origin "https://harmony.sysmacom.com.br"
+    Header always merge Vary "Origin"
+    Header always set Access-Control-Expose-Headers "Content-Length, Content-Range, Accept-Ranges"
+    Header always set Access-Control-Allow-Methods "GET, HEAD, OPTIONS"
+    Header always set X-Content-Type-Options "nosniff"
+</IfModule>
+<IfModule mod_mime.c>
+    AddType audio/mpeg .mp3
+    AddType audio/wav .wav
+    AddType audio/ogg .ogg
+    AddType audio/mp4 .m4a
+    AddType audio/aac .aac
+    AddType audio/flac .flac
+    AddType audio/webm .webm
+</IfModule>
