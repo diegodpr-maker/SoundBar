@@ -15,13 +15,20 @@ function links(result){return [...result.text.matchAll(/href\s*=\s*["']([^"']+)[
 const visible=r=>({url:r.url,status:r.status,type:r.type,allowOrigin:r.allowOrigin});
 const normalize=name=>name.normalize('NFD').replace(/\p{M}/gu,'').replace(/[^a-z]/gi,'').toLowerCase();
 try{
- const root=await request(base);report.root=visible(root);const candidates=links(root).filter(u=>u.pathname.endsWith('/')&&u.href!==base.href);let folder=candidates.find(u=>{const name=normalize(decodeURIComponent(u.pathname.split('/').at(-2)));return name.includes('abertura')&&name.includes('trabalh')});
- if(!folder){for(const name of ['abertura trabalhos','Abertura Trabalhos','Abertura dos Trabalhos','abertura dos trabalhos']){const candidate=new URL(encodeURIComponent(name)+'/',base),probe=await request(candidate);if(probe.status===200&&links(probe).some(u=>/\.(mp3|wav|ogg|m4a|aac|flac|webm)$/i.test(u.pathname))){folder=candidate;break}}}
- if(!folder){report.errors.push('The requested folder could not be identified from the public index.');report.directoryNames=candidates.map(u=>decodeURIComponent(u.pathname.split('/').at(-2)));}
- else{
-  const index=await request(folder);report.folder=visible(index);const files=[...new Map(links(index).filter(u=>/\.(mp3|wav|ogg|m4a|aac|flac|webm)$/i.test(u.pathname)).map(u=>[u.href,u])).values()];
-  for(const file of files.slice(0,100)){try{const head=await request(file,{method:'HEAD'});const probe=await request(file,{range:true,limit:65536});const total=probe.range?.match(/\/(\d+)$/)?.[1]||(probe.status===200?probe.length:head.length);report.files.push({name:decodeURIComponent(file.pathname.split('/').at(-1)),url:file.href,status:probe.status,mime:probe.type,size:total?Number(total):null,allowOrigin:probe.allowOrigin,cors:probe.allowOrigin==='*'||probe.allowOrigin===appOrigin,audioHeader:/^(ID3|RIFF|OggS|fLaC)/.test(probe.text)||probe.bytes[0]===255&&(probe.bytes[1]&224)===224,probeBytes:probe.bytes.length})}catch(error){report.files.push({url:file.href,error:error.message})}}
-  if(files.length>100)report.errors.push('More than 100 files in this folder; inspect the remaining files separately.');
+ const catalogResponse=await request(new URL('harmony-catalogo.php',base),{limit:4000000});report.root=visible(catalogResponse);
+ if(catalogResponse.status!==200)throw Error('Catalogue returned '+catalogResponse.status);
+ const catalog=JSON.parse(catalogResponse.text);if(catalog.format!=='harmony-cpanel-catalog'||catalog.version!==1||!Array.isArray(catalog.files))throw Error('Invalid catalogue');
+ report.totalCatalogFiles=catalog.files.length;report.ignoredCount=catalog.ignored?.length||0;report.catalogTruncated=!!catalog.truncated;
+ const selected=catalog.files.filter(f=>{const name=normalize(String(f.category||''));return name.includes('abertura')&&name.includes('trabalh')});report.selectedCategories=[...new Set(selected.map(f=>f.category))];
+ if(!selected.length){report.availableCategories=[...new Set(catalog.files.map(f=>f.category))];throw Error('Requested category not found in catalogue.');}
+ report.folder={url:catalogResponse.url,status:200,type:'application/json',allowOrigin:catalogResponse.allowOrigin};
+ for(const item of selected.slice(0,100)){
+  try{
+   const file=new URL(item.path,base);if(!allowed(file)||file.search||file.hash||!/\.(mp3|wav|ogg|m4a|aac|flac|webm)$/i.test(file.pathname))throw Error('Invalid audio address');
+   const head=await request(file,{method:'HEAD'});const probe=await request(file,{range:true,limit:65536});const total=probe.range?.match(/\/(\d+)$/)?.[1]||(probe.status===200?probe.length:head.length);
+   report.files.push({name:item.name,filename:item.filename,category:item.category,url:file.href,status:probe.status,mime:probe.type,size:total?Number(total):null,expectedSize:Number(item.file_size),allowOrigin:probe.allowOrigin,cors:probe.allowOrigin==='*'||probe.allowOrigin===appOrigin,audioHeader:/^(ID3|RIFF|OggS|fLaC)/.test(probe.text)||probe.bytes[0]===255&&(probe.bytes[1]&224)===224,probeBytes:probe.bytes.length});
+  }catch(error){report.files.push({name:item.name,category:item.category,error:error.message})}
  }
+ if(selected.length>100)report.errors.push('More than 100 files in requested category.');
 }catch(error){report.errors.push(error.message)}
 writeFileSync('cpanel-inspection.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
