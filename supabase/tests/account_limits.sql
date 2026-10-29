@@ -16,6 +16,7 @@ begin
  execute 'reset role';
  perform set_config('request.jwt.claim.sub',admin_user::text,true);execute 'set local role authenticated';
  perform public.sb_admin_set_account_limits(member,2097152,10485760);
+ perform public.sb_admin_set_account_plan(member,'pro');
  perform public.sb_admin_set_account_limits(pending_user,1048576,5242880);
  begin perform public.sb_admin_set_account_limits(member,53477376,1073741824);raise exception 'Global file ceiling bypassed';exception when raise_exception then if sqlerrm='Global file ceiling bypassed' then raise;end if;end;
  begin perform public.sb_admin_set_account_limits(member,31457280,1048576);raise exception 'Insufficient total accepted';exception when raise_exception then if sqlerrm='Insufficient total accepted' then raise;end if;end;
@@ -26,10 +27,10 @@ begin
  if public.sb_account_state()->'limits' is distinct from '{"file":2097152,"storage":10485760}'::jsonb then raise exception 'Member limit not refreshed';end if;
  if not soundbar_private.sb_storage_quota('{"size":2097152}') or soundbar_private.sb_storage_quota('{"size":2097153}') then raise exception 'Per-file storage quota incorrect';end if;
  insert into public.sb_playlists(id,name) values(playlist,'Custom limits');
+ insert into storage.objects(bucket_id,name,metadata) values('soundbar-audio',member||'/'||track||'.mp3','{"size":2097152,"mimetype":"audio/mpeg"}');
  insert into public.sb_tracks(id,playlist_id,name,audio_path,file_size) values(track,playlist,'Audio',member||'/'||track||'.mp3',2097152);
- begin update public.sb_tracks set file_size=2097153 where id=track;raise exception 'Track limit not enforced';exception when check_violation then null;end;
- obj:=member||'/'||gen_random_uuid()||'.mp3';
- insert into storage.objects(bucket_id,name,metadata) values('soundbar-audio',obj,'{"size":2097152,"mimetype":"audio/mpeg"}');
+ begin update public.sb_tracks set file_size=2097153 where id=track;raise exception 'Track limit not enforced';exception when insufficient_privilege then null;end;
+ obj:=member||'/'||track||'.mp3';
  execute 'reset role';
  -- Simulate already-saved files, then lower the quota below the current usage.
  insert into storage.objects(bucket_id,name,metadata) values('soundbar-audio',member||'/'||gen_random_uuid()||'.mp3','{"size":6291456,"mimetype":"audio/mpeg"}');

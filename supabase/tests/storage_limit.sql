@@ -5,6 +5,7 @@ begin
  insert into auth.users(id,email,raw_user_meta_data) values(member,member||'@example.invalid','{}');
  insert into public.sb_profiles(id,display_name) values(member,'Storage limit test');
  update public.sb_account_access set status='approved' where user_id=member;
+ insert into soundbar_private.sb_account_plans(user_id,plan) values(member,'pro');
  perform set_config('request.jwt.claim.sub',member::text,true);execute 'set local role authenticated';
  if not soundbar_private.sb_storage_quota(null) then raise exception 'Empty account cannot reserve an upload';end if;
  if not soundbar_private.sb_storage_quota('{"size":31457280}') then raise exception '30 MiB file rejected';end if;

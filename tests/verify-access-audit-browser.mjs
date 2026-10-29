@@ -20,7 +20,7 @@ async function fixture({id=admin,expired=false,empty=false}={}){
    if(u.pathname==='/auth/v1/token')return respond(session(id));
    if(u.pathname==='/functions/v1/soundbar-register')return respond({ok:true});
    if(u.pathname==='/functions/v1/soundbar-errors')return respond({ok:true});
-   if(u.pathname==='/rest/v1/rpc/sb_account_state'){if(stall){await new Promise(r=>setTimeout(r,2000));try{return await respond({})}catch{return}}return owner?respond({user_id:owner,status:'approved',is_admin:owner===admin,limits:{file:31457280,storage:1073741824}}):respond({message:'Denied'},401)}
+   if(u.pathname==='/rest/v1/rpc/sb_account_state'){if(stall){await new Promise(r=>setTimeout(r,2000));try{return await respond({})}catch{return}}return owner?respond({user_id:owner,status:'approved',is_admin:owner===admin,plan:'pro',can_upload:true,limits:{file:31457280,storage:1073741824}}):respond({message:'Denied'},401)}
    if(u.pathname==='/rest/v1/rpc/sb_admin_accounts')return owner===admin?respond([{user_id:member,email:'fixture@example.test',display_name:'Membro',status:'approved',requested_at:new Date().toISOString(),is_admin:false,can_delete:true,limits:{file:31457280,storage:1073741824},storage_bytes:0}]):respond({message:'Denied'},403);
    if(u.pathname==='/rest/v1/rpc/sb_browse_playlists')return respond([]);
    if(u.pathname==='/rest/v1/rpc/sb_admin_notifications')return respond([]);

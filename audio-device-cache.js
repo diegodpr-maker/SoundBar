@@ -10,6 +10,7 @@ export function createDeviceAudioCache({audio,fetcher=fetch,isCurrent=()=>true,o
   if(!job){const epoch=generation,controller=new AbortController(),valid=()=>epoch===generation&&isCurrent(owner);job={controller};
    job.promise=(async()=>{
     if(!valid())throw interrupted();const local=await audio.load(owner,id);if(!valid())throw interrupted();if(local&&(!size||local.size===Number(size)))return{blob:local,saved:true};
+    if(trackId&&trackId!==id){const legacy=await audio.load(owner,trackId);if(!valid())throw interrupted();if(legacy&&(!size||legacy.size===Number(size)))return{blob:legacy,saved:true,legacy:true}}
     if(!network)throw Error('Este áudio ainda não está disponível no dispositivo.');
     let timer;try{
      const transfer=(async()=>{const address=typeof url==='function'?await url():url;if(!valid())throw interrupted();const response=await fetcher(address,{signal:controller.signal,credentials:'omit',cache:'default'});if(!response.ok)throw Error('Não foi possível baixar o áudio. Tente novamente.');const blob=await response.blob();if(!blob.size||blob.size>maxBytes||size&&blob.size!==Number(size))throw Error('O áudio recebido está incompleto. Tente novamente.');return blob})();
@@ -19,7 +20,7 @@ export function createDeviceAudioCache({audio,fetcher=fetch,isCurrent=()=>true,o
    })().finally(()=>{if(pending.get(mapKey)===job)pending.delete(mapKey)});pending.set(mapKey,job);
   }
   const epoch=generation,result=await job.promise;if(epoch!==generation||!isCurrent(owner))throw interrupted();
-  if(trackId&&trackId!==id&&result.saved){try{await audio.alias(owner,trackId,id)}catch(error){if(!warned){warned=true;onStorageError(error)}}}
+  if(trackId&&trackId!==id&&result.saved&&!result.legacy){try{await audio.alias(owner,trackId,id)}catch(error){if(!warned){warned=true;onStorageError(error)}}}
   if(epoch!==generation||!isCurrent(owner))throw interrupted();return result;
  }
  return {get,clear};

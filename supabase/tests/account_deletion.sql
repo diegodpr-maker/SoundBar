@@ -9,7 +9,7 @@ begin
  insert into soundbar_private.sb_admin_audit(actor,target,previous_status,new_status) values(a,b,'pending','approved');
  perform set_config('request.jwt.claim.sub',b::text,true);
  insert into public.sb_playlists(id,user_id,name) values(p,b,'Private playlist');
- insert into public.sb_tracks(id,user_id,playlist_id,name,audio_path) values(t,b,p,'Private track',b||'/'||t||'.mp3');
+ insert into public.sb_tracks(id,user_id,playlist_id,name,sample_id) values(t,b,p,'Private track',(select id from public.sb_library_tracks where active limit 1));
  execute 'set local role authenticated';
  begin perform public.sb_prepare_account_deletion(c,c||'@example.invalid');raise exception 'Member deleted another member';exception when insufficient_privilege then null;end;
  begin perform public.sb_admin_accounts();raise exception 'Member listed accounts';exception when insufficient_privilege then null;end;
