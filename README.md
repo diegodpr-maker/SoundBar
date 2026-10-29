@@ -283,3 +283,14 @@ Antes de importar: consultar o catálogo atual e a tabela privada `soundbar_priv
 `tools/cpanel/import-plan.mjs` gera o plano revisável e idempotente. Fontes conhecidas com tamanho/hash de cabeçalho alterado exigem revisão. Uma fonte nova com impressão parcial igual à de um item prévio exige confirmar o hash completo antes de importar. Não deduplicar por título ou por impressão parcial isoladamente. O histórico privado não tem acesso direto pelos clientes; RLS e negação explícita preservam esse limite. O cadastro das categorias continua reservado ao administrador.
 
 Depois da transação: verificar contagem de itens únicos, associação de todas as categorias, ausência de fontes repetidas, permanência dos seis IDs de Abertura, e executar novamente o planejador contra o estado atualizado: o segundo plano deve ter zero inserções e zero novas fontes. Manter a transação idempotente e não alterar perfis, playlists, faixas pessoais ou arquivos existentes.
+
+
+### Renomear categorias da biblioteca — v53
+
+O administrador abre Gerenciar áudios → Renomear categoria, seleciona o nome atual e informa o novo nome (até 60 caracteres). A operação atualiza a categoria principal e as associações secundárias de todos os itens correspondentes, inclusive retirados, sem reativá-los. Nomes que já pertençam a outra categoria são recusados, evitando uma mesclagem acidental. IDs de áudio, fontes, arquivos, conteúdo criptografado no dispositivo e referências nas playlists são preservados.
+
+`public.sb_admin_rename_library_category` é uma entrada invoker que delega a uma função definer em `soundbar_private`, com `auth.uid()` e aprovação de administrador verificadas antes de qualquer bloqueio ou escrita. A renomeação é atômica e usa o mesmo advisory lock do importador, além de um bloqueio breve da tabela de catálogo para serializar alterações concorrentes de rótulos. Não bloqueia a leitura/reprodução nem modifica faixas dos usuários. RLS das tabelas privadas continua com negação explícita aos clientes.
+
+A tabela privada `sb_library_category_names` guarda o mapeamento de nomes de pastas para nomes exibidos; renomeações sucessivas atualizam o destino existente. O campo de categoria do histórico de fontes acompanha o novo rótulo, sem alterar URLs. Nas próximas importações, consultar essa tabela e passar os pares `source_name`/`display_name` como quarto argumento de `buildImportPlan` (ou quinto caminho de entrada na CLI, depois do arquivo de saída). Assim, novos arquivos dentro de uma pasta antiga recebem o nome atual, sem recriar a categoria anterior.
+
+Os testes SQL de renomeação usam fixtures com rollback: administrador aprovado, membro com metadata forjada, anônimo, administrador pendente, alteração principal/secundária, nomes inválidos/conflitantes, reversão, cadeia de aliases e integridade de playlists/URLs/estado de retirada. Nenhum nome real de categoria é alterado no teste.

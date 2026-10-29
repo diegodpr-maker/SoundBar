@@ -4,13 +4,14 @@ import {pathToFileURL} from 'node:url';
 const BASE='https://sysmacom.com.br/musicas-harmony/';
 export function sourceKey(input){const url=new URL(input);if(url.protocol!=='https:'||url.origin!=='https://sysmacom.com.br'||!url.pathname.startsWith('/musicas-harmony/')||url.username||url.password||url.search||url.hash||/%(?:2e|2f|5c)/i.test(url.pathname)||!/[.](mp3|wav|ogg|m4a|aac|flac|webm)$/i.test(url.pathname))throw Error('Invalid hosted audio URL');return url.href.replace(/%[a-f0-9]{2}/gi,s=>s.toUpperCase())}
 const categories=row=>[...new Set([row.category,...(row.categories||[])].filter(Boolean).map(v=>v.trim()))];
-export function buildImportPlan(report,existing=[],knownSources=[]){
+export function buildImportPlan(report,existing=[],knownSources=[],categoryNames=[]){
  if(report.errors?.length||report.catalogTruncated||!Array.isArray(report.files)||report.files.length>5000)throw Error('Incomplete or failed inventory');
+ const names=new Map(categoryNames.map(row=>[row.source_name,row.display_name]));
  const byId=new Map(existing.map(row=>[row.id,row])),byUrl=new Map(),known=new Map(),byHash=new Map(),byHead=new Map();
  for(const row of existing){try{byUrl.set(sourceKey(row.audio_url),row)}catch{}}
  for(const row of knownSources){known.set(sourceKey(row.source_url),row);if(row.content_sha256)byHash.set(row.content_sha256,row.library_id);const key=row.file_size+':'+row.head_sha256;if(!byHead.has(key))byHead.set(key,[]);byHead.get(key).push(row)}
  const groups=new Map(),seen=new Set();
- for(const item of report.files){
+ for(const original of report.files){const item={...original,category:names.get(original.category)||original.category};
   if(item.error||item.hashError||![200,206].includes(item.status)||!item.cors||!item.audioHeader||item.size!==item.expectedSize||item.size<1||item.size>52428800||typeof item.mime!=='string'||!item.mime.startsWith('audio/')||!/^[a-f0-9]{64}$/.test(item.headHash||''))throw Error('Unverified audio: '+item.name);
   const key=sourceKey(item.url);if(seen.has(key))throw Error('Repeated inventory source');seen.add(key);
   if(typeof item.category!=='string'||!item.category.trim()||item.category.trim().length>60)throw Error('Invalid category');
@@ -35,7 +36,7 @@ export function buildImportPlan(report,existing=[],knownSources=[]){
   if(!canonical.active)skipped.push(...files.map(f=>({url:f.url,reason:'Retired catalogue entry remains retired'})));
   for(const file of files)if(!file.prior)sources.push({source_url:file.key,library_id:canonical.id,category:file.category.trim(),file_size:file.size,head_sha256:file.headHash,content_sha256:file.contentSha256||null});
  }
- return{inserts,updates,sources,skipped,stats:{hostedFiles:report.files.length,uniqueAudio:groups.size,duplicateCopies,knownFiles,newEntries:inserts.length,categoryUpdates:updates.length,sourceRecords:sources.length,categories:new Set(report.files.map(f=>f.category)).size}};
+ return{inserts,updates,sources,skipped,stats:{hostedFiles:report.files.length,uniqueAudio:groups.size,duplicateCopies,knownFiles,newEntries:inserts.length,categoryUpdates:updates.length,sourceRecords:sources.length,categories:new Set([...groups.values()].flatMap(files=>files.map(f=>f.category))).size}};
 }
 export function renderImportSQL(plan){
  const json=(value,label)=>{const delimiter='$harmony_import_'+label+'$';const text=JSON.stringify(value);if(text.includes(delimiter))throw Error('Unsafe SQL payload delimiter');return delimiter+text+delimiter+'::jsonb'};
@@ -58,4 +59,4 @@ export function renderImportSQL(plan){
  select jsonb_build_object('registered_sources',(select count(*) from soundbar_private.sb_library_sources),'unique_hosted_items',(select count(distinct library_id) from soundbar_private.sb_library_sources)) as imported;
  commit;`;
 }
-if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){const [report,existing,sources,output]=process.argv.slice(2);const plan=buildImportPlan(JSON.parse(readFileSync(report)),JSON.parse(readFileSync(existing)),JSON.parse(readFileSync(sources)));writeFileSync(output,JSON.stringify(plan,null,2));writeFileSync(output+'.sql',renderImportSQL(plan));console.log(JSON.stringify(plan.stats))}
+if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){const [report,existing,sources,output,names]=process.argv.slice(2);const plan=buildImportPlan(JSON.parse(readFileSync(report)),JSON.parse(readFileSync(existing)),JSON.parse(readFileSync(sources)),names?JSON.parse(readFileSync(names)):[]);writeFileSync(output,JSON.stringify(plan,null,2));writeFileSync(output+'.sql',renderImportSQL(plan));console.log(JSON.stringify(plan.stats))}
