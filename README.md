@@ -259,3 +259,14 @@ A otimização reduz o consumo futuro, sem alterar medidores de cobrança passad
 Verificação: `tests/verify-egress-browser.mjs` usa áudio sintético e o HTML real sob CSP em Chromium móvel, exigindo zero requisições de áudio na biblioteca de 167 itens, no gerenciamento e em uma playlist de 29 faixas. O clique pode solicitar somente a faixa escolhida, com URL privada renovada; pause/resume/stop não iniciam outra transferência. Os testes de offline, fader e acesso continuam executados nos workflows existentes.
 
 A revisão v50 versiona também as importações do armazenamento criptografado e do catálogo offline em conjunto com o novo shell. Isso evita combinar uma versão antiga mantida no cache HTTP do navegador com os novos métodos de referência, inclusive no acesso web antes da instalação do service worker.
+
+
+### Biblioteca no cPanel — v51
+
+O catálogo pode manter áudios ativos em `https://sysmacom.com.br/musicas-harmony/`, sem criar objetos no Supabase Storage. A migração `supabase/cpanel_library_source.sql` preserva os arquivos antigos do Supabase e os itens retirados; libera somente o host HTTPS e a pasta expressamente aprovados. Nega outros hosts, caminhos fora da pasta, travessia de diretórios, barras codificadas, consultas, fragmentos e extensões não suportadas. As políticas RLS existentes continuam exigindo administrador para cadastrar/editar/retirar itens. A alteração não modifica playlists ou seus arquivos.
+
+A CSP adiciona a pasta de músicas somente em `connect-src` e `media-src`; não amplia `script-src`, não libera todo HTTPS e não usa coringa de domínio. O shell v51 garante a atualização no PWA. Os arquivos externos continuam excluídos do Cache Storage público; a cópia por conta permanece criptografada em IndexedDB.
+
+O script `harmony-catalogo.php` do kit consulta somente metadados e gera links codificados por segmento, com suporte a espaços/acentos. No cPanel, `acesso-harmony.txt` deve ser aplicado como bloco do `.htaccess` da pasta de músicas para permitir o Origin do Harmony. Nunca substituir um `.htaccess` existente sem preservar suas outras regras. Abrir o JSON não comprova CORS nos MP3s: os dois endpoints são conferidos separadamente.
+
+`tests/verify-cpanel-browser.mjs` utiliza o HTML real sob a CSP de produção e baixa um MP3 real da categoria solicitada em Chromium móvel. Verifica o primeiro download, reprodução real, reutilização criptografada após recarregar, uso dentro da playlist, pause/resume e fader. O backend de contas é uma fixture local; esse teste não cria usuários nem envia e-mails e não transfere música pelo Supabase. O inspetor confere HTTP, MIME, tamanho, cabeçalho de áudio e CORS de cada faixa da categoria. As verificações de schema e permissões ficam em `supabase/tests/cpanel_library_source.sql` e `cpanel_library_access.sql`, executadas com rollback.

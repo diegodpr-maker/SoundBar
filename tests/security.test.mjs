@@ -10,3 +10,6 @@ test('backup roundtrips per-playlist fader preferences and rejects invalid types
 });
 
 test('backup audio validation follows the individual file limit without relaxing format rules',()=>{const data=backup();assert.doesNotThrow(()=>validateBackup(data,{maxFileBytes:1048576}));assert.throws(()=>validateBackup(data,{maxFileBytes:52428801}),/Limite/);data.audio.track='data:text/html;base64,PHNjcmlwdD4=';assert.throws(()=>validateBackup(data,{maxFileBytes:52428800}),/áudios locais/)});
+
+
+test('cPanel audio is allowed only in the owned music path without widening scripts or arbitrary destinations',()=>{for(const file of ['index.html','app.html','login.html','credits.html','local.html']){const csp=read(file).match(/http-equiv="Content-Security-Policy" content="([^"]+)"/)[1];for(const directive of ['connect-src','media-src']){const value=csp.split(';').map(x=>x.trim()).find(x=>x.startsWith(directive+' '));assert.ok(value.split(' ').includes('https://sysmacom.com.br/musicas-harmony/'));assert.ok(!value.split(' ').includes('https://sysmacom.com.br'));assert.ok(!value.split(' ').includes('https:'))}assert.ok(!csp.match(/script-src ([^;]+)/)[1].includes('sysmacom.com.br'))}});

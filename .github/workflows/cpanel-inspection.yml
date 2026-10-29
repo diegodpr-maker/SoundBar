@@ -4,6 +4,8 @@ on:
     branches: [feature/access-audit]
     paths:
       - 'tools/cpanel/inspect-library.mjs'
+      - 'tests/verify-cpanel-browser.mjs'
+      - '*.html'
       - '.github/workflows/cpanel-inspection.yml'
   workflow_dispatch:
 permissions:
@@ -16,3 +18,10 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Inspect requested public folder and audio headers
         run: node tools/cpanel/inspect-library.mjs
+      - name: Install pinned mobile browser driver
+        run: npm install --prefix /tmp/harmony-browser --ignore-scripts --no-audit --no-fund playwright@1.56.1
+      - name: Install Chromium
+        run: node /tmp/harmony-browser/node_modules/playwright/cli.js install chromium
+      - name: Verify real cPanel MP3 playback, device cache and fader
+        timeout-minutes: 3
+        run: node tests/verify-cpanel-browser.mjs /tmp/harmony-browser/node_modules/playwright cpanel-inspection.json
