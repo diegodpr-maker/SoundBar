@@ -15,4 +15,4 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Inspect all currently hosted categories without downloading full audio
-        run: node tools/cpanel/inspect-library.mjs --all
+        run: node tools/cpanel/inspect-library.mjs --all --confirm-duplicates

@@ -36,4 +36,15 @@ try{
  await Promise.all([worker(),worker(),worker()]);report.files.sort((a,b)=>String(a.url||a.name).localeCompare(String(b.url||b.name)));
  if(selected.length>limit)report.errors.push('Catalogue exceeds inspection limit.');
 }catch(error){report.errors.push(error.message)}
+if(process.argv.includes('--confirm-duplicates')&&!report.errors.length){
+ const groups=new Map();for(const file of report.files){if(!file.headHash)continue;const key=file.size+':'+file.headHash;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(file)}
+ const candidates=[...groups.values()].filter(g=>g.length>1).flat();let nextHash=0;
+ async function hashWorker(){while(nextHash<candidates.length){const file=candidates[nextHash++];try{
+  let url=new URL(file.url),response;for(let hop=0;hop<4;hop++){if(!allowed(url))throw Error('Hash address outside requested directory');response=await fetch(url,{redirect:'manual',headers:{Origin:appOrigin},signal:AbortSignal.timeout(120000)});if([301,302,303,307,308].includes(response.status)){const next=new URL(response.headers.get('location'),url);await response.body?.cancel();url=next;continue}break}
+  if(response.status!==200)throw Error('Full audio returned '+response.status);const hash=createHash('sha256'),head=createHash('sha256'),reader=response.body.getReader();let total=0,headSize=0;
+  try{for(;;){const {value,done}=await reader.read();if(done)break;total+=value.length;if(total>file.size||total>52428800)throw Error('Audio grew during verification');hash.update(value);if(headSize<65536){const part=value.subarray(0,65536-headSize);head.update(part);headSize+=part.length}}}finally{await reader.cancel()}
+  if(total!==file.size||head.digest('hex')!==file.headHash)throw Error('Audio changed during verification');file.contentSha256=hash.digest('hex');
+ }catch(error){file.hashError=error.message}}}
+ await Promise.all([hashWorker(),hashWorker()]);report.confirmedHashFiles=candidates.filter(f=>f.contentSha256).length;report.hashCandidateFiles=candidates.length;
+}
 writeFileSync('cpanel-inspection.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
