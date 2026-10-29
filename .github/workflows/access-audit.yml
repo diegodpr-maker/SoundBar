@@ -9,6 +9,7 @@ on:
       - 'tests/*access*'
       - 'tests/*session*'
       - 'tests/*egress*'
+      - 'tests/*categories*'
       - '.github/workflows/access-audit.yml'
   workflow_dispatch:
 permissions:
@@ -29,6 +30,8 @@ jobs:
         run: node tests/verify-access-audit-browser.mjs /tmp/harmony-browser/node_modules/playwright /tmp/harmony-browser/node_modules/@supabase/supabase-js/dist/umd/supabase.js /tmp/harmony-browser/node_modules/tus-js-client/dist/tus.min.js
       - name: Verify no unsolicited audio transfers
         run: node tests/verify-egress-browser.mjs /tmp/harmony-browser/node_modules/playwright
+      - name: Verify unique library items and multi-category filters
+        run: node tests/verify-library-categories-browser.mjs /tmp/harmony-browser/node_modules/playwright
       - name: Verify event controls and fader with device caching
         timeout-minutes: 2
         run: node tests/verify-event-playback-browser.mjs /tmp/harmony-browser/node_modules/playwright && node tests/verify-event-fader-browser.mjs /tmp/harmony-browser/node_modules/playwright

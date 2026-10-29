@@ -1,4 +1,4 @@
-import {sampleUrl,sampleById,loadPublicCatalog} from './samples.js?v=33';
+import {sampleUrl,sampleById,loadPublicCatalog} from './samples.js?v=52';
 import {createPreviewPlayer,previewMessage} from './audio-preview.js?v=33';
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const audio=document.querySelector('#demo-audio');audio.volume=.85;
