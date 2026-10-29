@@ -1,5 +1,6 @@
-﻿$ErrorActionPreference = 'Stop'
-$tools = Join-Path $PSScriptRoot '../../tools/pastas-windows'
+﻿param([string]$ToolsRoot)
+$ErrorActionPreference = 'Stop'
+$tools = if ($ToolsRoot) { $ToolsRoot } else { Join-Path $PSScriptRoot '../../tools/pastas-windows' }
 $rename = Join-Path $tools 'Renomear-Pastas-Harmony.ps1'
 $restore = Join-Path $tools 'Restaurar-Pastas-Harmony.ps1'
 $base = Join-Path ([IO.Path]::GetTempPath()) ('harmony-folders-' + [guid]::NewGuid().ToString())

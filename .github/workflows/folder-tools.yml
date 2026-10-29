@@ -4,6 +4,7 @@ on:
     branches: [main, feature/access-audit]
     paths:
       - 'tools/pastas-windows/**'
+      - 'downloads/Harmony-Preparar-Pastas.zip'
       - 'tests/windows/**'
       - '.github/workflows/folder-tools.yml'
   workflow_dispatch:
@@ -18,3 +19,9 @@ jobs:
       - name: Verify actual Windows folder renames and undo
         shell: powershell
         run: '& ./tests/windows/verify-folder-rename.ps1'
+      - name: Verify the downloadable ZIP on Windows
+        shell: powershell
+        run: |
+          $destination = Join-Path $env:RUNNER_TEMP 'harmony-download-test'
+          Expand-Archive -LiteralPath ./downloads/Harmony-Preparar-Pastas.zip -DestinationPath $destination
+          & ./tests/windows/verify-folder-rename.ps1 -ToolsRoot (Join-Path $destination 'Harmony-Preparar-Pastas')
