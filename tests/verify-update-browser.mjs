@@ -118,7 +118,8 @@ try {
   await page.waitForFunction(async () => { const r = await navigator.serviceWorker.getRegistration(); return !r.installing && !r.waiting; });
   assert.ok(failureHits > 0);
   assert.equal(await page.evaluate(() => document.documentElement.dataset.harmonyBuild), '60');
-  assert.equal(await page.evaluate(async () => (await caches.keys()).includes('sysmacom-harmony-pages-v61')), false);
+  // A periodic retry may already be staging the same failed build; observe its cleanup.
+  await page.waitForFunction(async () => !(await caches.keys()).includes('sysmacom-harmony-pages-v61'));
   failedAsset = ''; build = 62; await check(page); await waitBuild(page, 62); await waitBuild(second, 62);
   assert.deepEqual(await audioDigests(page), before);
   await second.close(); await context.setOffline(true); await page.reload(); await waitBuild(page, 62);
