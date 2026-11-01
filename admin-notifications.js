@@ -3,7 +3,7 @@ export function createAdminNotifications({getClient,window:win=globalThis.window
  const rpc=async(action,data={})=>{const client=await getClient();const r=await client.rpc('sb_admin_notifications',{action,data});if(r.error)throw Error(r.error.message||'Não foi possível atualizar as notificações.');return r.data};
  const registration=async()=>{
   let timer;
-  try{await nav.serviceWorker.register('./sw.js');return await Promise.race([nav.serviceWorker.ready,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Reabra o Harmony e tente novamente.')),10000)})])}finally{clearTimeout(timer)}
+  try{await nav.serviceWorker.register('./sw.js',{updateViaCache:'none'});return await Promise.race([nav.serviceWorker.ready,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Reabra o Harmony e tente novamente.')),10000)})])}finally{clearTimeout(timer)}
  };
  const subscription=async()=>supported()?(await registration()).pushManager.getSubscription():null;
  async function status(){

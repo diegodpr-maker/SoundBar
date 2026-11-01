@@ -12,6 +12,7 @@ on:
       - 'tests/*categories*'
       - 'tests/*plans*'
       - 'tests/*offline*'
+      - 'tests/*update*'
       - 'tests/*limits*'
       - '.github/workflows/access-audit.yml'
   workflow_dispatch:
@@ -43,3 +44,6 @@ jobs:
       - name: Verify existing admin quotas, upload recovery and offline mode
         timeout-minutes: 3
         run: node tests/verify-account-limits-browser.mjs /tmp/harmony-browser/node_modules/playwright && node tests/verify-offline-browser.mjs /tmp/harmony-browser/node_modules/playwright && node tests/verify-account-deletion-browser.mjs /tmp/harmony-browser/node_modules/playwright
+      - name: Verify installed PWA automatic updates and preserved offline audio
+        timeout-minutes: 3
+        run: node tests/verify-update-browser.mjs /tmp/harmony-browser/node_modules/playwright

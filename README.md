@@ -323,3 +323,14 @@ Validação: suíte Node; cenários reais Chromium de Free/Pro, alteração admi
 O fader ocupa uma linha inteira no modo evento, com trilha de 12 px, puxador de 32 px e área de interação de 56 px. Botões de 48 px ajustam o volume em passos de 5%, usando o mesmo controle mestre do áudio e das prévias. O painel reserva sua altura real abaixo dos cards e reorganiza os botões no celular em pé.
 
 CSS e navegação usam o mesmo critério para o menu retrátil: até 1024 px ou dispositivo com ponteiro primário de toque e sem hover. O menu abre sobre o conteúdo, fecha pelo botão, fundo, seleção de página ou Escape e mantém a rolagem interna. A área principal, o transporte e a prévia deixam de reservar a coluna lateral nesses tamanhos, inclusive na horizontal.
+
+
+### Atualizações automáticas do PWA — v57
+
+`pwa-update.js` coordena a atualização em todos os pontos de entrada, inclusive no app instalado. O registro usa `updateViaCache: none`, verifica o service worker ao abrir, voltar ao primeiro plano, recuperar a conexão e a cada minuto visível. Uma versão só entra em operação depois que todo o shell público foi baixado e os documentos têm o identificador da publicação esperada. Falha de rede ou publicação parcial mantém a versão anterior.
+
+O worker instalado aguarda duas verificações de prontidão de todas as janelas do mesmo escopo antes de ativar. Áudios selecionados, reprodução, modo evento, transferências, operações protegidas e formulários alterados adiam a troca. No intervalo curto entre a confirmação e a recarga, as janelas ficam inertes; ao mudar o controlador, recarregam automaticamente no mesmo endereço e hash. Nenhuma sessão, chave, arquivo de áudio ou playlist em IndexedDB é apagada. Não há recarga forçada durante eventos nem consulta periódica ao Supabase para procurar versões.
+
+A primeira migração de versões até v56 depende do ciclo de atualização do navegador, porque a página antiga ainda não contém o coordenador. Pode ser necessário fechar as janelas antigas uma única vez para ativar este mecanismo; não é necessário reinstalar nem limpar dados. Depois dessa migração, as versões seguintes são aplicadas automaticamente quando todas as janelas estiverem prontas.
+
+A verificação de navegador usa o app e service workers reais com áudios gerados para o teste, simula publicações consecutivas, reprodução e modo evento, duas janelas, trabalho pendente, edição não salva, publicação incompleta, recuperação, retorno da conexão, checagem periódica, abertura offline e escopo `/SoundBar/`. Compara os áudios cifrados e os marcadores de sessão antes e depois.

@@ -1,10 +1,35 @@
-const CACHE='sysmacom-harmony-pages-v56';
+const CACHE='sysmacom-harmony-pages-v57';
 // Only the public application shell is cached. Account metadata and audio remain
 // encrypted in IndexedDB; external requests, API responses and signed URLs are excluded.
-const FILES=["./","./admin-notifications.js","./account-limits.js","./account-plan.js","./audio-file-read.js","./app-navigation.js","./app.html","./app.js","./audio-conversion.js","./audio-device-cache.js","./audio-levels.js","./audio-pool.js","./audio-preview.js","./audio-validation.js","./auth.js","./backend.js","./config.js","./error-monitor.js","./event-fader.js","./event-wake-lock.js","./index.html","./landing.js","./library-batch.js","./local.html","./local.js","./login.html","./manifest.webmanifest","./offline-audio.js","./offline-playlists.js","./playback-controls.js","./playlist-batch.js","./playlist-colors.js","./playlist-order.js","./playlist-transfer.js","./pwa-entry.js","./pwa-install.css","./pwa-install.js","./resumable-upload.js","./samples.js","./security-utils.js","./session-transport.js","./style.css","./theme.js","./themes.css","./track-sort.js","./upload-error.js","./upload-log.js","./upload-transfer.js","./wma-worker.js","./harmony-rgb-180.png","./harmony-rgb-192.png","./harmony-rgb-512.png"];
-self.addEventListener('install',event=>{event.waitUntil((async()=>{const cache=await caches.open(CACHE);try{await cache.addAll(FILES.map(path=>new Request(new URL(path,self.registration.scope),{cache:'reload'})));await self.skipWaiting()}catch(error){await caches.delete(CACHE);throw error}})())});
+const FILES=["./","./admin-notifications.js","./account-limits.js","./account-plan.js","./audio-file-read.js","./app-navigation.js","./app.html","./app.js","./audio-conversion.js","./audio-device-cache.js","./audio-levels.js","./audio-pool.js","./audio-preview.js","./audio-validation.js","./auth.js","./backend.js","./config.js","./error-monitor.js","./event-fader.js","./event-wake-lock.js","./index.html","./landing.js","./library-batch.js","./local.html","./local.js","./login.html","./manifest.webmanifest","./offline-audio.js","./offline-playlists.js","./playback-controls.js","./playlist-batch.js","./playlist-colors.js","./playlist-order.js","./playlist-transfer.js","./pwa-entry.js","./pwa-update.js","./pwa-install.css","./pwa-install.js","./resumable-upload.js","./samples.js","./security-utils.js","./session-transport.js","./style.css","./theme.js","./themes.css","./track-sort.js","./upload-error.js","./upload-log.js","./upload-transfer.js","./wma-worker.js","./harmony-rgb-180.png","./harmony-rgb-192.png","./harmony-rgb-512.png"];
+const BUILD=57;
+async function cacheShell(){
+ const cache=await caches.open(CACHE),queue=[...FILES];
+ try{
+  const jobs=Array.from({length:6},async()=>{while(queue.length){const path=queue.shift(),key=new URL(path,self.registration.scope),url=new URL(key);url.searchParams.set('harmony-build',String(BUILD));const response=await fetch(new Request(url,{cache:'no-store',signal:AbortSignal.timeout(20000)}));if(!response.ok||response.type==='opaque')throw Error('Incomplete application shell');if(path==='./'||path.endsWith('.html')){const html=await response.clone().text();if(!html.includes('data-harmony-build="'+BUILD+'"'))throw Error('Application deployment is not complete');}await cache.put(key,response)}});
+  const results=await Promise.allSettled(jobs);if(results.some(r=>r.status==='rejected'))throw Error('Application update incomplete');
+ }catch(error){await caches.delete(CACHE);throw error}
+}
+self.addEventListener('install',event=>{event.waitUntil(cacheShell())});
 self.addEventListener('activate',event=>{event.waitUntil((async()=>{for(const key of await caches.keys())if((key.startsWith('sounddeck-')||key.startsWith('soundbar-')||key.startsWith('sysmacom-harmony-'))&&key!==CACHE)await caches.delete(key);await self.clients.claim()})())});
-self.addEventListener('message',event=>{if(event.data?.type==='HARMONY_OFFLINE_READY')event.waitUntil((async()=>{const cache=await caches.open(CACHE);const present=await Promise.all(FILES.map(path=>cache.match(new URL(path,self.registration.scope))));event.ports[0]?.postMessage({ready:present.every(Boolean),version:56})})())});
+let preparingUpdate=false;
+async function applyUpdate(source){
+ if(preparingUpdate)return false;preparingUpdate=true;
+ const base=new URL(self.registration.scope);let windows=[],committed=false;
+ try{
+  windows=(await self.clients.matchAll({type:'window',includeUncontrolled:true})).filter(client=>{const url=new URL(client.url);return url.origin===base.origin&&url.pathname.startsWith(base.pathname)});
+  if(!windows.some(client=>client.id===source?.id))return false;
+  const ask=(client,type)=>new Promise(resolve=>{const channel=new MessageChannel(),timer=setTimeout(()=>{channel.port1.close();resolve(false)},1800);channel.port1.onmessage=event=>{clearTimeout(timer);channel.port1.close();resolve(event.data?.accepted===true&&event.data.version>=57)};try{client.postMessage({type,version:BUILD},[channel.port2])}catch{clearTimeout(timer);channel.port1.close();resolve(false)}});
+  const votes=await Promise.all(windows.map(client=>ask(client,'HARMONY_CAN_UPDATE')));if(!votes.every(Boolean))return false;
+  const prepared=await Promise.all(windows.map(client=>ask(client,'HARMONY_PREPARE_UPDATE')));if(!prepared.every(Boolean))return false;
+  await self.skipWaiting();committed=true;return true;
+ }finally{preparingUpdate=false;if(!committed)for(const client of windows){try{client.postMessage({type:'HARMONY_CANCEL_UPDATE',version:BUILD})}catch{}}}
+}
+self.addEventListener('message',event=>{
+ if(event.data?.type==='HARMONY_VERSION'){event.ports[0]?.postMessage({version:BUILD});return}
+ if(event.data?.type==='HARMONY_APPLY_UPDATE'){event.waitUntil(applyUpdate(event.source).then(accepted=>event.ports[0]?.postMessage({accepted}),()=>event.ports[0]?.postMessage({accepted:false})));return}
+ if(event.data?.type==='HARMONY_OFFLINE_READY')event.waitUntil((async()=>{const cache=await caches.open(CACHE);const present=await Promise.all(FILES.map(path=>cache.match(new URL(path,self.registration.scope))));event.ports[0]?.postMessage({ready:present.every(Boolean),version:BUILD})})());
+});
 self.addEventListener('fetch',event=>{
  const url=new URL(event.request.url),base=new URL(self.registration.scope);
  if(event.request.method!=='GET'||url.origin!==base.origin||event.request.headers.has('range'))return;
