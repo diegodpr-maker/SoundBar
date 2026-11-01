@@ -7,9 +7,25 @@ function wav(){const rate=22050,samples=rate*20,buffer=Buffer.alloc(44+samples*2
 try{
  const context=await browser.newContext({viewport:{width:844,height:390},isMobile:true,hasTouch:true,serviceWorkers:'block',userAgent:'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/130.0.0.0 Mobile Safari/537.36'});context.setDefaultTimeout(10000);
  await context.addInitScript(()=>{window.testAudios=[];const NativeAudio=window.Audio;window.Audio=function(...args){const audio=new NativeAudio(...args);window.testAudios.push(audio);return audio};Element.prototype.requestFullscreen=()=>Promise.reject(Error('fullscreen unavailable'));});
- const tone=wav();await context.route('**/*',async route=>{const url=new URL(route.request().url());if(url.hostname!=='harmony-event.test')return route.fulfill({status:204,body:''});if(url.pathname==='/backend.js')return route.fulfill({contentType:'text/javascript; charset=utf-8',body:backend});if(url.pathname==='/tone.wav')return route.fulfill({contentType:'audio/wav',body:tone});try{const file=new URL('.'+url.pathname,root);if(!fileURLToPath(file).startsWith(fileURLToPath(root)))throw Error('path');return route.fulfill({contentType:url.pathname.endsWith('.html')?'text/html; charset=utf-8':url.pathname.endsWith('.js')?'text/javascript; charset=utf-8':url.pathname.endsWith('.css')?'text/css; charset=utf-8':'application/octet-stream',body:readFileSync(file)})}catch{return route.fulfill({status:404,body:''})}});
+ const tone=wav(),serveFixture=async route=>{const url=new URL(route.request().url());if(url.hostname!=='harmony-event.test')return route.fulfill({status:204,body:''});if(url.pathname==='/backend.js')return route.fulfill({contentType:'text/javascript; charset=utf-8',body:backend});if(url.pathname==='/tone.wav')return route.fulfill({contentType:'audio/wav',body:tone});try{const file=new URL('.'+url.pathname,root);if(!fileURLToPath(file).startsWith(fileURLToPath(root)))throw Error('path');return route.fulfill({contentType:url.pathname.endsWith('.html')?'text/html; charset=utf-8':url.pathname.endsWith('.js')?'text/javascript; charset=utf-8':url.pathname.endsWith('.css')?'text/css; charset=utf-8':'application/octet-stream',body:readFileSync(file)})}catch{return route.fulfill({status:404,body:''})}};await context.route('**/*',serveFixture);
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('https://harmony-event.test/app.html#studio/event');await page.locator('[data-action="play"]').last().waitFor();
  assert.equal(await page.locator('.transport').isVisible(),false);
+ // Drawer uses the full viewport, including the old 801–900 px gap and wide touch screens.
+ for(const viewport of [{width:390,height:844},{width:844,height:390},{width:932,height:430},{width:1024,height:768},{width:1280,height:800}]){
+  await page.setViewportSize(viewport);await page.locator('#menu-toggle').waitFor({state:'visible'});
+  const mainBefore=await page.locator('.app-main').boundingBox();assert.equal(mainBefore.x,0);assert.equal(mainBefore.width,viewport.width);
+  assert.equal(await page.locator('#app-sidebar').isVisible(),false);
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  await page.locator('#menu-toggle').tap();await page.locator('#menu-close').waitFor({state:'visible'});
+  assert.equal(await page.locator('#menu-toggle').getAttribute('aria-expanded'),'true');
+  const mainAfter=await page.locator('.app-main').boundingBox();assert.equal(mainAfter.width,mainBefore.width);
+  await page.locator('#menu-backdrop').tap({position:{x:viewport.width-8,y:100}});await page.locator('#app-sidebar').waitFor({state:'hidden'});
+  assert.equal(await page.locator('.app-main').evaluate(e=>e.inert),false);
+ }
+ await page.setViewportSize({width:844,height:390});
+ await page.locator('#menu-toggle').tap();await page.locator('#app-sidebar [data-nav="playlists"]').tap();
+ await page.waitForURL('**/app.html#playlists');await page.locator('#app-sidebar').waitFor({state:'hidden'});
+ await page.goto('https://harmony-event.test/app.html#studio/event');await page.locator('[data-action="play"]').last().waitFor();
  await page.locator('[data-action="playlist-settings"]').click();assert.match(await page.locator('#setting-retrigger option[value="stop"]').innerText(),/Pausar e continuar/);await page.locator('#modal-cancel').click();
  const tap=id=>page.locator(`[data-action="play"][data-id="${id}"]`).click();await tap('a');await page.waitForFunction(()=>window.testAudios.some(a=>!a.paused&&a.currentTime>.25));await page.evaluate(()=>window.cardAudio=window.testAudios.find(a=>!a.paused));
  await tap('a');await page.waitForFunction(()=>window.cardAudio.paused);const cardPaused=await page.evaluate(()=>({time:window.cardAudio.currentTime,src:window.cardAudio.src}));assert.ok(cardPaused.time>.2);await page.waitForTimeout(150);assert.ok(Math.abs(await page.evaluate(()=>window.cardAudio.currentTime)-cardPaused.time)<.05);
@@ -21,6 +37,15 @@ try{
  await page.locator('[data-action="event-mode"]').click();await page.waitForFunction(()=>document.body.classList.contains('event-mode'));assert.equal(await page.locator('.transport').isVisible(),true);assert.equal(await page.locator('#pause-all').isDisabled(),true);assert.equal(await page.locator('.event-exit').isVisible(),true);
  await page.locator('[data-action="play"][data-id="a"]').click();await page.waitForFunction(()=>window.testAudios.filter(a=>!a.paused).length===1);await page.locator('[data-action="play"][data-id="b"]').click();await page.waitForFunction(()=>window.testAudios.filter(a=>!a.paused).length===2);
  await page.waitForFunction(()=>document.querySelector('#play-count').textContent==='2 faixas tocando');assert.match(await page.locator('#now-playing').innerText(),/Faixa A.*Faixa B/);
+ // Use actual touch input and quick controls while both real audio elements play.
+ const fader=await page.locator('#master-volume').boundingBox();assert.ok(fader.width>=440&&fader.height>=56);
+ const increment=page.locator('[data-volume-step="5"]'),decrement=page.locator('[data-volume-step="-5"]');
+ assert.ok((await increment.boundingBox()).width>=48);assert.ok((await decrement.boundingBox()).height>=48);
+ await increment.tap();assert.equal(await page.locator('#master-volume').inputValue(),'85');assert.ok(await page.evaluate(()=>window.testAudios.filter(a=>!a.paused).every(a=>a.volume===.85)));
+ await decrement.tap();assert.equal(await page.locator('#master-volume').inputValue(),'80');
+ await page.touchscreen.tap(fader.x+fader.width*.25,fader.y+fader.height/2);
+ const touched=Number(await page.locator('#master-volume').inputValue());assert.ok(touched>=20&&touched<=30);assert.equal(await page.locator('#volume-text').innerText(),touched+'%');
+ assert.ok(await page.evaluate(v=>window.testAudios.filter(a=>!a.paused).every(a=>Math.abs(a.volume-v/100)<.001),touched));
  await page.locator('#master-volume').evaluate(e=>{e.value='35';e.dispatchEvent(new Event('input',{bubbles:true}))});assert.ok(await page.evaluate(()=>window.testAudios.filter(a=>!a.paused).every(a=>a.volume===.35)));
  await page.waitForFunction(()=>window.testAudios.filter(a=>!a.paused).every(a=>a.currentTime>.25));await page.evaluate(()=>window.selectedAudios=window.testAudios.filter(a=>!a.paused));await page.locator('#pause-all').click();await page.waitForFunction(()=>window.selectedAudios.every(a=>a.paused));
  const paused=await page.evaluate(()=>window.selectedAudios.map(a=>({time:a.currentTime,src:a.src})));await page.waitForTimeout(150);assert.ok(await page.evaluate(times=>window.selectedAudios.every((a,i)=>Math.abs(a.currentTime-times[i].time)<.05),paused));assert.equal(await page.locator('.transport').isVisible(),true);assert.match(await page.locator('#pause-all').innerText(),/Continuar/);assert.match(await page.locator('#play-count').innerText(),/2 faixas pausadas/);
@@ -31,5 +56,24 @@ try{
  const controls=await page.locator('.transport').boundingBox();assert.ok(controls.x>=0&&controls.x+controls.width<=390&&controls.y+controls.height<=844);
  const pauseBox=await page.locator('#pause-all').boundingBox(),stopBox=await page.locator('#stop-all').boundingBox(),exitBox=await page.locator('.event-exit').boundingBox();assert.ok(pauseBox.x+pauseBox.width<=stopBox.x&&stopBox.x+stopBox.width<=exitBox.x);
  await page.evaluate(()=>document.documentElement.dataset.theme='light');assert.equal(await page.locator('.transport').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(255, 255, 255)');assert.deepEqual(errors,[]);
- console.log('Actual HTMLAudioElement playback: card pause/resume retains position/source, another selection resets the paused card, native mix is preserved, event panel, simultaneous tracks, pause/continue without reset, shared volume, exit/resume, stop-all, fullscreen fallback and portrait/light layout passed under app CSP.');
+ // Both themes keep a usable fader and all event controls inside narrow and landscape screens.
+ for(const theme of ['light','dark'])for(const viewport of [{width:320,height:568},{width:390,height:844},{width:844,height:390},{width:932,height:430}]){
+  await page.evaluate(theme=>document.documentElement.dataset.theme=theme,theme);await page.setViewportSize(viewport);
+  const bar=await page.locator('.transport').boundingBox(),slider=await page.locator('#master-volume').boundingBox();
+  assert.ok(bar.x>=0&&bar.x+bar.width<=viewport.width&&bar.y+bar.height<=viewport.height);
+  assert.ok(slider.width>=(viewport.width<620?140:440)&&slider.height>=56);
+  for(const selector of ['#pause-all','#stop-all','.event-exit','[data-volume-step="-5"]','[data-volume-step="5"]']){
+   const box=await page.locator(selector).boundingBox();assert.ok(box.x>=bar.x&&box.x+box.width<=bar.x+bar.width+1&&box.height>=48);
+  }
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ }
+ // A keyboard desktop keeps its sidebar and releases modal focus when resized back.
+ const desktop=await browser.newContext({viewport:{width:1366,height:900},serviceWorkers:'block'});await desktop.route('**/*',serveFixture);
+ const desktopPage=await desktop.newPage();await desktopPage.goto('https://harmony-event.test/app.html#studio/event');await desktopPage.locator('[data-action="play"]').last().waitFor();
+ assert.equal(await desktopPage.locator('#app-sidebar').isVisible(),true);assert.equal(await desktopPage.locator('#menu-toggle').isVisible(),false);
+ await desktopPage.setViewportSize({width:850,height:800});await desktopPage.locator('#menu-toggle').click();
+ await desktopPage.setViewportSize({width:1366,height:900});await desktopPage.waitForFunction(()=>!document.querySelector('.app-main').inert);
+ assert.equal(await desktopPage.locator('#menu-backdrop').isVisible(),false);assert.equal(await desktopPage.locator('#app-sidebar').isVisible(),true);await desktop.close();
+ assert.deepEqual(errors,[]);
+ console.log('Touch volume, full-width drawer at 390/844/932/1024/1280 px, desktop resize, light/dark event layout, actual HTMLAudioElement playback: card pause/resume retains position/source, another selection resets the paused card, native mix is preserved, event panel, simultaneous tracks, pause/continue without reset, shared volume, exit/resume, stop-all, fullscreen fallback and portrait/light layout passed under app CSP.');
 }finally{await browser.close()}

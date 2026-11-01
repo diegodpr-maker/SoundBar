@@ -316,3 +316,10 @@ A mudança previne novas cópias por importação e não apaga áudios históric
 O manifesto mantém `id` e `start_url`, usa uma URL estável e consulta a rede com prazo de 2,5 s e fallback público offline. Os ícones RGB permanecem versionados por nome. Android/WebAPK e iOS controlam a atualização do ícone já instalado; o site não consegue forçar substituição imediata de todos os atalhos.
 
 Validação: suíte Node; cenários reais Chromium de Free/Pro, alteração administrativa e downgrade em sessão ativa; testes SQL transacionais de autorização, cotas, compartilhamento, idempotência, exclusão de referências e conta de origem. Fixtures são revertidas, sem envio de e-mails ou arquivos reais.
+
+
+### Controles de evento e menu móvel — v56
+
+O fader ocupa uma linha inteira no modo evento, com trilha de 12 px, puxador de 32 px e área de interação de 56 px. Botões de 48 px ajustam o volume em passos de 5%, usando o mesmo controle mestre do áudio e das prévias. O painel reserva sua altura real abaixo dos cards e reorganiza os botões no celular em pé.
+
+CSS e navegação usam o mesmo critério para o menu retrátil: até 1024 px ou dispositivo com ponteiro primário de toque e sem hover. O menu abre sobre o conteúdo, fecha pelo botão, fundo, seleção de página ou Escape e mantém a rolagem interna. A área principal, o transporte e a prévia deixam de reservar a coluna lateral nesses tamanhos, inclusive na horizontal.

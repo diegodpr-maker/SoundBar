@@ -1,5 +1,5 @@
-import {canUpload,requireUpload,planLabel} from './account-plan.js?v=55';
-import {createDeviceAudioCache} from './audio-device-cache.js?v=55';
+import {canUpload,requireUpload,planLabel} from './account-plan.js?v=56';
+import {createDeviceAudioCache} from './audio-device-cache.js?v=56';
 import {accountLimits,limitsFromForm,MiB,GiB,DEFAULT_LIMITS} from './account-limits.js?v=47';
 import {mergePlaylistOrder} from './playlist-order.js?v=46';
 import {offlinePlaylists,isConnectionError} from './offline-playlists.js?v=50';
@@ -12,13 +12,13 @@ import {playbackState,pauseTracks,resumeTracks} from './playback-controls.js?v=4
 import {createAdminNotifications} from './admin-notifications.js?v=37';
 import {createUploadLog} from './upload-log.js?v=33';
 import {validateBackup} from './security-utils.js?v=47';
-import {initNavigation} from './app-navigation.js?v=48';
+import {initNavigation} from './app-navigation.js?v=56';
 import {uploadLibraryBatch,validateLibraryFiles,libraryFailureSummary,prepareLibraryFile} from './library-batch.js?v=47';
 import {attachTrackSort} from './track-sort.js?v=46';
 import {offlineAudio} from './offline-audio.js?v=50';
 import {createAudioPool} from './audio-pool.js?v=49';
 import {createPreviewPlayer,previewMessage} from './audio-preview.js?v=33';
-import {getBackend} from './backend.js?v=55';
+import {getBackend} from './backend.js?v=56';
 import {libraryCategories,validateLibraryCategories,saveBlob} from './samples.js?v=52';
 'use strict';
 const $=s=>document.querySelector(s),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -215,7 +215,7 @@ $('#pause-all').onclick=async()=>{
   updateTransport();if(errors.length)toast('Não foi possível continuar. Toque em Continuar para tentar novamente.',true);
  }else{eventFader.pause();pauseTracks(active);updateTransport()}
 };
-$('#stop-all').onclick=()=>{stopAll();if(state.route==='library')render()};$('#master-volume').oninput=e=>{$('#volume-text').textContent=e.target.value+'%';audioLevels.setMaster(e.target.value/100,active.values());if(preview)preview.audio.volume=e.target.value/100};document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#modal').open){stopAll();return}if($('#modal').open||e.target.closest('input,select,textarea,button')||e.ctrlKey||e.metaKey||e.altKey||e.repeat)return;const n=Number(e.key);if(n>=1&&n<=9&&state.board?.tracks[n-1]){e.preventDefault();play(state.board.tracks[n-1].id)}});window.addEventListener('hashchange',navigate);window.addEventListener('pagehide',()=>{endSessionWork();stopAll();clearPreparedAudio()});window.addEventListener('pageshow',()=>{if(document.body.classList.contains('event-mode')&&state.me?.access?.status==='approved')void eventWake.setActive(true)});
+$('#stop-all').onclick=()=>{stopAll();if(state.route==='library')render()};$('#master-volume').oninput=e=>{$('#volume-text').textContent=e.target.value+'%';e.target.setAttribute('aria-valuetext',e.target.value+'%');audioLevels.setMaster(e.target.value/100,active.values());if(preview)preview.audio.volume=e.target.value/100};document.querySelectorAll('[data-volume-step]').forEach(button=>button.addEventListener('click',()=>{const input=$('#master-volume');input.value=Math.max(0,Math.min(100,Number(input.value)+Number(button.dataset.volumeStep)));input.dispatchEvent(new Event('input',{bubbles:true}))}));document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#modal').open){stopAll();return}if($('#modal').open||e.target.closest('input,select,textarea,button')||e.ctrlKey||e.metaKey||e.altKey||e.repeat)return;const n=Number(e.key);if(n>=1&&n<=9&&state.board?.tracks[n-1]){e.preventDefault();play(state.board.tracks[n-1].id)}});window.addEventListener('hashchange',navigate);window.addEventListener('pagehide',()=>{endSessionWork();stopAll();clearPreparedAudio()});window.addEventListener('pageshow',()=>{if(document.body.classList.contains('event-mode')&&state.me?.access?.status==='approved')void eventWake.setActive(true)});
 (async()=>{try{
  if(navigator.onLine===false&&await enterOffline()){await navigate();return}
  const backend=await onlineBackend();
