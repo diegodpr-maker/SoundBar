@@ -6,6 +6,8 @@ import assert from 'node:assert/strict';
 
 const { chromium } = createRequire(import.meta.url)(process.argv[2]);
 const root = new URL('../', import.meta.url);
+const sourceBuild = Number(readFileSync(new URL('sw.js', root), 'utf8').match(/const BUILD=(\d+);/)[1]);
+// Synthetic release numbers stay fixed when the production shell version changes.
 let build = 57, failedAsset = '', failureHits = 0;
 function wav() {
   const rate = 22050, samples = rate * 12, b = Buffer.alloc(44 + samples * 2);
@@ -38,7 +40,7 @@ const server = createServer((req, res) => {
     if (!fileURLToPath(file).startsWith(fileURLToPath(root))) throw Error('Invalid path');
     let data = readFileSync(file);
     if (/\.(?:html|js|css)$/.test(path) || path === '/') {
-      data = Buffer.from(data.toString().replaceAll('?v=57', '?v=' + build).replaceAll('data-harmony-build="57"', 'data-harmony-build="' + build + '"').replace('pages-v57', 'pages-v' + build).replace('const BUILD=57;', 'const BUILD=' + build + ';').replace('const VERSION = 57;', 'const VERSION = ' + build + ';'));
+      data = Buffer.from(data.toString().replaceAll('?v=' + sourceBuild, '?v=' + build).replaceAll('data-harmony-build="' + sourceBuild + '"', 'data-harmony-build="' + build + '"').replace('pages-v' + sourceBuild, 'pages-v' + build).replace('const BUILD=' + sourceBuild + ';', 'const BUILD=' + build + ';').replace('const VERSION = ' + sourceBuild + ';', 'const VERSION = ' + build + ';'));
     }
     res.writeHead(200, { 'Content-Type': path.endsWith('.js') ? 'text/javascript' : path.endsWith('.css') ? 'text/css' : path.endsWith('.png') ? 'image/png' : path.endsWith('.webmanifest') ? 'application/manifest+json' : 'text/html; charset=utf-8' });
     res.end(data);
