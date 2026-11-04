@@ -1,8 +1,8 @@
-const CACHE='sysmacom-harmony-pages-v57';
+const CACHE='sysmacom-harmony-pages-v58';
 // Only the public application shell is cached. Account metadata and audio remain
 // encrypted in IndexedDB; external requests, API responses and signed URLs are excluded.
-const FILES=["./","./admin-notifications.js","./account-limits.js","./account-plan.js","./audio-file-read.js","./app-navigation.js","./app.html","./app.js","./audio-conversion.js","./audio-device-cache.js","./audio-levels.js","./audio-pool.js","./audio-preview.js","./audio-validation.js","./auth.js","./backend.js","./config.js","./error-monitor.js","./event-fader.js","./event-wake-lock.js","./index.html","./landing.js","./library-batch.js","./local.html","./local.js","./login.html","./manifest.webmanifest","./offline-audio.js","./offline-playlists.js","./playback-controls.js","./playlist-batch.js","./playlist-colors.js","./playlist-order.js","./playlist-transfer.js","./pwa-entry.js","./pwa-update.js","./pwa-install.css","./pwa-install.js","./resumable-upload.js","./samples.js","./security-utils.js","./session-transport.js","./style.css","./theme.js","./themes.css","./track-sort.js","./upload-error.js","./upload-log.js","./upload-transfer.js","./wma-worker.js","./harmony-rgb-180.png","./harmony-rgb-192.png","./harmony-rgb-512.png"];
-const BUILD=57;
+const FILES=["./","./admin-notifications.js","./account-limits.js","./account-plan.js","./audio-file-read.js","./app-navigation.js","./app.html","./app.js","./audio-conversion.js","./audio-device-cache.js","./audio-levels.js","./audio-pool.js","./audio-preview.js","./audio-validation.js","./auth.js","./backend.js","./config.js","./error-monitor.js","./event-fader.js","./event-wake-lock.js","./external-audio.js","./index.html","./landing.js","./library-batch.js","./local.html","./local.js","./login.html","./manifest.webmanifest","./offline-audio.js","./offline-playlists.js","./playback-controls.js","./playlist-batch.js","./playlist-colors.js","./playlist-order.js","./playlist-transfer.js","./pwa-entry.js","./pwa-update.js","./pwa-install.css","./pwa-install.js","./resumable-upload.js","./samples.js","./security-utils.js","./session-transport.js","./style.css","./theme.js","./themes.css","./track-sort.js","./upload-error.js","./upload-log.js","./upload-transfer.js","./wma-worker.js","./harmony-rgb-180.png","./harmony-rgb-192.png","./harmony-rgb-512.png"];
+const BUILD=58;
 async function cacheShell(){
  const cache=await caches.open(CACHE),queue=[...FILES];
  try{
@@ -17,7 +17,7 @@ async function applyUpdate(source){
  if(preparingUpdate)return false;preparingUpdate=true;
  const base=new URL(self.registration.scope);let windows=[],committed=false;
  try{
-  windows=(await self.clients.matchAll({type:'window',includeUncontrolled:true})).filter(client=>{const url=new URL(client.url);return url.origin===base.origin&&url.pathname.startsWith(base.pathname)});
+  windows=(await self.clients.matchAll({type:'window',includeUncontrolled:true})).filter(client=>{const url=new URL(client.url);return url.origin===base.origin&&url.pathname.startsWith(base.pathname)&&url.pathname!==new URL('baixar-audios.html',base).pathname});
   if(!windows.some(client=>client.id===source?.id))return false;
   const ask=(client,type)=>new Promise(resolve=>{const channel=new MessageChannel(),timer=setTimeout(()=>{channel.port1.close();resolve(false)},1800);channel.port1.onmessage=event=>{clearTimeout(timer);channel.port1.close();resolve(event.data?.accepted===true&&event.data.version>=57)};try{client.postMessage({type,version:BUILD},[channel.port2])}catch{clearTimeout(timer);channel.port1.close();resolve(false)}});
   const votes=await Promise.all(windows.map(client=>ask(client,'HARMONY_CAN_UPDATE')));if(!votes.every(Boolean))return false;

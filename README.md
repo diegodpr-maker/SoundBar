@@ -334,3 +334,12 @@ O worker instalado aguarda duas verificações de prontidão de todas as janelas
 A primeira migração de versões até v56 depende do ciclo de atualização do navegador, porque a página antiga ainda não contém o coordenador. Pode ser necessário fechar as janelas antigas uma única vez para ativar este mecanismo; não é necessário reinstalar nem limpar dados. Depois dessa migração, as versões seguintes são aplicadas automaticamente quando todas as janelas estiverem prontas.
 
 A verificação de navegador usa o app e service workers reais com áudios gerados para o teste, simula publicações consecutivas, reprodução e modo evento, duas janelas, trabalho pendente, edição não salva, publicação incompleta, recuperação, retorno da conexão, checagem periódica, abertura offline e escopo `/SoundBar/`. Compara os áudios cifrados e os marcadores de sessão antes e depois.
+
+
+### Áudios migrados para a hospedagem — v58
+
+Os destinos em `https://sysmacom.com.br/harmony-midia/` usam os mesmos IDs e caminhos lógicos das faixas. Itens públicos mantêm seus IDs, categorias, nomes, situação ativa/arquivada e referências. Arquivos privados são resolvidos por `sb_external_audio_urls`, que verifica aprovação e propriedade da faixa antes de emitir uma assinatura de cinco minutos. As chaves ficam apenas na configuração privada do banco e no PHP da hospedagem; nunca no frontend.
+
+`external_audio_enabled` controla a ativação depois da conferência e da publicação. Novos arquivos que ainda estiverem no Storage mantêm o fluxo anterior. Downloads e backups consultam a mesma autorização dos players. Compartilhamento, reordenação, fader, pausa e cache cifrado preservam os caminhos originais; a migração não cria cópias por usuário. As cotas continuam incluindo os áudios pessoais migrados, sem contar duas vezes as cópias temporárias. Caminhos já migrados não podem ser sobrescritos por novos uploads.
+
+A operação retém inventário, SHA256 e cópia dos metadados anteriores em tabelas privadas. A remoção das origens exige verificação de conteúdo, acesso privado, CORS, byte ranges, implantação e resolução de todos os vínculos. Só a Storage API remove arquivos; não executar DELETE na tabela de objetos. A página isolada de download do pacote não participa da votação de atualização do estúdio, pois suas transferências são do navegador e ela não executa reprodução nem edita dados.
