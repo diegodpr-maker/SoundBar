@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src https://fcmsojjtkiehsobbkjnr.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'; frame-src 'none'; upgrade-insecure-requests">
+  <meta name="theme-color" content="#1758c7">
+  <title>Baixar áudios — Sysmacom Harmony</title>
+  <link rel="icon" href="harmony-rgb-192.png">
+  <link rel="stylesheet" href="baixar-audios.css">
+  <script defer src="baixar-audios.js"></script>
+</head>
+<body>
+  <main>
+    <a class="brand" href="./"><img src="harmony-rgb-192.png" width="48" height="48" alt=""><span>Sysmacom <strong>Harmony</strong></span></a>
+    <section class="card">
+      <h1>Seus áudios, prontos para baixar.</h1>
+      <p id="status" role="status" aria-live="polite">Preparando seu download…</p>
+      <button id="retry" type="button" hidden>Tentar novamente</button>
+      <div id="downloads" hidden>
+        <a class="primary" id="complete">Baixar pacote completo</a>
+        <p class="hint">Baixe o pacote completo ou escolha as partes abaixo.</p>
+        <h2>Baixar em partes</h2>
+        <p>Extraia todas as partes no mesmo local da hospedagem.</p>
+        <div id="parts" class="parts"></div>
+        <p class="expiry" id="expiry"></p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
