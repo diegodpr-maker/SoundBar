@@ -1,5 +1,5 @@
-import {canUpload,requireUpload,planLabel} from './account-plan.js?v=59';
-import {createDeviceAudioCache} from './audio-device-cache.js?v=59';
+import {canUpload,requireUpload,planLabel} from './account-plan.js?v=60';
+import {createDeviceAudioCache} from './audio-device-cache.js?v=60';
 import {accountLimits,limitsFromForm,MiB,GiB,DEFAULT_LIMITS} from './account-limits.js?v=47';
 import {mergePlaylistOrder} from './playlist-order.js?v=46';
 import {offlinePlaylists,isConnectionError} from './offline-playlists.js?v=50';
@@ -12,13 +12,13 @@ import {playbackState,pauseTracks,resumeTracks} from './playback-controls.js?v=4
 import {createAdminNotifications} from './admin-notifications.js?v=37';
 import {createUploadLog} from './upload-log.js?v=33';
 import {validateBackup} from './security-utils.js?v=47';
-import {initNavigation} from './app-navigation.js?v=59';
+import {initNavigation} from './app-navigation.js?v=60';
 import {uploadLibraryBatch,validateLibraryFiles,libraryFailureSummary,prepareLibraryFile} from './library-batch.js?v=47';
 import {attachTrackSort} from './track-sort.js?v=46';
 import {offlineAudio} from './offline-audio.js?v=50';
 import {createAudioPool} from './audio-pool.js?v=49';
 import {createPreviewPlayer,previewMessage} from './audio-preview.js?v=33';
-import {getBackend} from './backend.js?v=59';
+import {getBackend} from './backend.js?v=60';
 import {libraryCategories,validateLibraryCategories,saveBlob} from './samples.js?v=52';
 'use strict';
 const $=s=>document.querySelector(s),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
