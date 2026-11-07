@@ -4,7 +4,7 @@ import {readdirSync} from 'node:fs';
 import assert from 'node:assert/strict';
 
 const groups = {
-  access: ['access-audit', 'egress', 'plans', 'library-categories', 'external-audio'],
+  access: ['library-picker', 'access-audit', 'egress', 'plans', 'library-categories', 'external-audio'],
   playback: ['auto-next', 'event-playback', 'event-fader', 'offline', 'batch-wake', 'update'],
   controls: ['account-limits', 'account-deletion', 'admin-notifications', 'install', 'playlist-order', 'track-sort', 'resumable'],
   conversion: ['wma'],

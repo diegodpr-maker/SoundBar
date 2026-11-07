@@ -61,3 +61,5 @@ O [histórico técnico](docs/IMPLEMENTATION_HISTORY.md) contém os registros ant
 ## Sequência e próxima faixa
 
 Em Configurações da playlist → Ao terminar uma faixa, “Tocar a próxima faixa da sequência” avança na ordem salva e encerra após a última. “Encerrar reprodução” e “Repetir em loop” permanecem separados; playlists anteriores conservam seu comportamento. No modo evento, “Próxima” avança manualmente junto aos controles de volume, respeitando o fader e o limite de duas faixas da transição. O botão fica desabilitado sem seleção e na última faixa. Pausar, parar ou um erro de reprodução não disparam o avanço automático. Playlists baixadas conservam essa configuração para uso offline; compartilhamento e backups também a preservam.
+
+Na playlist, Biblioteca abre uma janela ampla com nomes completos e prévia de áudio em cada item. A prévia usa o cache do dispositivo e só baixa a faixa escolhida; os controles nativos ficam dentro da janela e a reprodução da prévia é encerrada ao concluir, cancelar ou fechar por Escape.

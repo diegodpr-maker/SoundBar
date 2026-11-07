@@ -490,3 +490,16 @@ body.event-mode .toast{bottom:calc(var(--event-transport-height,100px) + 30px + 
 body.event-mode #next-track{display:inline-flex;grid-area:next}
 body.event-mode .transport{grid-template-columns:minmax(0,1fr) auto auto auto auto;grid-template-areas:"playing pause next stop exit" "volume volume volume volume volume"}
 @media(max-width:620px){body.event-mode .transport{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-areas:"playing playing playing playing" "volume volume volume volume" "pause next stop exit"}}
+
+/* Playlist library picker: full names and controls remain inside the dialog. */
+dialog.library-picker-dialog{width:min(960px,calc(100vw - 24px));max-width:960px;padding:24px;max-height:calc(100dvh - 24px)}
+dialog.library-picker-dialog #library-picker-search{width:100%}
+dialog.library-picker-dialog .library-picker>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 20px;align-items:center}
+dialog.library-picker-dialog .library-picker>div[hidden]{display:none}
+.library-picker-name{min-width:0;white-space:normal;overflow-wrap:anywhere;line-height:1.5}
+.library-picker-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.library-picker-actions .btn{min-height:44px;white-space:nowrap}
+dialog.library-picker-dialog .sample-preview{position:static;inset:auto;box-shadow:none;margin:16px 0 0;width:100%;min-width:0;grid-template-columns:minmax(0,1fr) auto;background:var(--panel);color:var(--text);border-color:var(--line)}
+dialog.library-picker-dialog .sample-preview strong{white-space:normal;overflow-wrap:anywhere}
+body.preview-open dialog.library-picker-dialog .library-picker{max-height:32dvh}
+@media(max-width:600px){dialog.library-picker-dialog{padding:18px}dialog.library-picker-dialog .library-picker>div{grid-template-columns:minmax(0,1fr);gap:8px}.library-picker-actions .btn{flex:1;min-width:0;white-space:normal}dialog.library-picker-dialog h2{font-size:22px}}
