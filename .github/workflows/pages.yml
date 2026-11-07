@@ -1,0 +1,56 @@
+name: Verified Pages publication
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: verified-pages-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    uses: ./.github/workflows/verify-release.yml
+  build:
+    needs: [verify]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pages: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Require the GitHub Actions publishing source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          source_type=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .build_type)
+          if [ "$source_type" != workflow ]; then
+            echo '::error::Select Settings > Pages > Build and deployment > Source > GitHub Actions. Branch publication bypasses this verification.'
+            exit 1
+          fi
+      - run: node ci/build-site.mjs
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
+        with:
+          path: .site
+  deploy:
+    needs: [verify, build]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.publication.outputs.page_url }}
+    steps:
+      - name: Publish the artifact from this verified commit
+        id: publication
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346
