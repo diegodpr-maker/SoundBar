@@ -154,7 +154,7 @@ async function play(id,sourceBoard=state.board){
  audio.onended=()=>{
   if(active.get(id)!==item)return;
   const board=state.board?.playlist.id===p.id?state.board:sourceBoard;
-  const latest=[...active].filter(([,other])=>other.playlistId===p.id).at(-1)?.[0];
+  const latest=[...active.keys()].at(-1);
   const next=board.playlist.auto_next&&!board.playlist.loop&&latest===id?board.tracks[board.tracks.findIndex(track=>track.id===id)+1]:null;
   stopOne(id);
   if(next&&board.tracks.some(track=>track.id===id)&&state.me?.profile&&!active.has(next.id))void play(next.id,board);
