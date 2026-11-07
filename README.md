@@ -57,3 +57,7 @@ Tópicos sugeridos: `pwa`, `soundboard`, `audio`, `playlists`, `offline`, `event
 A declaração de direitos reservados aplica-se ao código próprio. Dependências e obras de áudio mantêm suas licenças e seus titulares; a inclusão na biblioteca não concede licença de redistribuição sobre músicas de terceiros.
 
 O [histórico técnico](docs/IMPLEMENTATION_HISTORY.md) contém os registros anteriores de implementação.
+
+## Sequência e próxima faixa
+
+Em Configurações da playlist → Ao terminar uma faixa, “Tocar a próxima faixa da sequência” avança na ordem salva e encerra após a última. “Encerrar reprodução” e “Repetir em loop” permanecem separados; playlists anteriores conservam seu comportamento. No modo evento, “Próxima” avança manualmente junto aos controles de volume, respeitando o fader e o limite de duas faixas da transição. O botão fica desabilitado sem seleção e na última faixa. Pausar, parar ou um erro de reprodução não disparam o avanço automático. Playlists baixadas conservam essa configuração para uso offline; compartilhamento e backups também a preservam.

@@ -105,3 +105,5 @@ test('a denied external audio request never falls back to signing an unrelated S
  const {client,calls}=mockClient(),baseRPC=client.rpc;client.rpc=async(name,args)=>{if(name==='sb_external_audio_urls')return{error:{code:'42501',message:'Denied'},status:403};const r=await baseRPC(name,args);if(name==='sb_account_state')r.data.external_audio_enabled=true;return r};
  await assert.rejects(()=>createBackend(client).prepareAudio([{id:'a',audio_path:'other/source.mp3'}]),e=>e.status===403);assert.equal(calls.filter(c=>['sign','sign-batch'].includes(c.operation)).length,0);
 });
+
+ test('playlist auto-next accepts only a boolean and updates only the owner',async()=>{const {client,calls}=mockClient();const backend=createBackend(client);await assert.rejects(()=>backend.call('/playlists/playlist-1',{method:'PATCH',body:{auto_next:'true'}}),/sequência/);await backend.call('/playlists/playlist-1',{method:'PATCH',body:{name:'Order',loop:false,auto_next:true}});const update=calls.find(c=>c.table==='sb_playlists'&&c.operation==='update');assert.equal(update.payload.auto_next,true);assert.ok(update.filters.some(([k,v])=>k==='user_id'&&v==='alice'))});

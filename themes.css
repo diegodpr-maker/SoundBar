@@ -484,3 +484,9 @@ body.event-mode .toast{bottom:calc(var(--event-transport-height,100px) + 30px + 
 .sidebar{height:100vh;height:100dvh;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}
 .sidebar>.brand,.sidebar>.nav-label,.sidebar>.side-bottom{flex-shrink:0}.sidebar>nav{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;scroll-behavior:smooth;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--line) transparent;scroll-padding-block:12px;padding-block:2px}.sidebar nav .sidelink{flex:0 0 auto}.sidebar .side-bottom{padding-bottom:env(safe-area-inset-bottom,0px)}
 @media(prefers-reduced-motion:reduce){.sidebar>nav{scroll-behavior:auto}}
+
+/* Keep the full-width volume fader and group next with the event controls. */
+.event-next{display:none}
+body.event-mode #next-track{display:inline-flex;grid-area:next}
+body.event-mode .transport{grid-template-columns:minmax(0,1fr) auto auto auto auto;grid-template-areas:"playing pause next stop exit" "volume volume volume volume volume"}
+@media(max-width:620px){body.event-mode .transport{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-areas:"playing playing playing playing" "volume volume volume volume" "pause next stop exit"}}

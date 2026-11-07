@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 
 const groups = {
   access: ['access-audit', 'egress', 'plans', 'library-categories', 'external-audio'],
-  playback: ['event-playback', 'event-fader', 'offline', 'batch-wake', 'update'],
+  playback: ['auto-next', 'event-playback', 'event-fader', 'offline', 'batch-wake', 'update'],
   controls: ['account-limits', 'account-deletion', 'admin-notifications', 'install', 'playlist-order', 'track-sort', 'resumable'],
   conversion: ['wma'],
 };
