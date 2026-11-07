@@ -1,0 +1,62 @@
+name: Mandatory release verification
+on:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm test && npm run check
+      - name: Verify the public artifact boundary
+        run: node ci/build-site.mjs
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [access, playback, controls]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm ci --prefix ci --ignore-scripts --no-audit --no-fund
+      - run: node ci/node_modules/playwright/cli.js install --with-deps chromium
+      - run: node ci/run-browser.mjs ${{ matrix.group }}
+  conversion:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm ci --prefix ci --ignore-scripts --no-audit --no-fund
+      - run: node ci/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Check real WMA conversion and resulting MP3
+        run: |
+          curl --fail --retry 2 --max-time 120 -o /tmp/ffmpeg-core.cjs https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.js
+          curl --fail --retry 2 --max-time 180 -o /tmp/ffmpeg-core.wasm https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.wasm
+          node tests/verify-wma-runtime.mjs /tmp/ffmpeg-core.cjs /tmp/ffmpeg-core.wasm
+          node ci/run-browser.mjs conversion
+  push:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm ci --prefix ci --ignore-scripts --no-audit --no-fund
+      - run: node tests/verify-push-runtime.mjs "$GITHUB_WORKSPACE/ci/node_modules/web-push"
+  cpanel:
+    uses: ./.github/workflows/cpanel-tools.yml
+  windows:
+    uses: ./.github/workflows/folder-tools.yml

@@ -10,6 +10,7 @@ on:
       - 'tests/windows/**'
       - '.github/workflows/folder-tools.yml'
   workflow_dispatch:
+  workflow_call:
 permissions:
   contents: read
 jobs:

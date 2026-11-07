@@ -1,5 +1,25 @@
 # Auditoria de segurança — Sysmacom Harmony
 
+## Situação da revisão atual
+
+Revisão em 07/11/2026. Este quadro descreve o estado atual; os registros históricos abaixo conservam as evidências das correções anteriores e podem mencionar limites já substituídos.
+
+| Item | Situação e evidência | Próxima ação |
+| --- | --- | --- |
+| Publicação sem aprovação dos testes | Workflow `pages.yml` com suíte obrigatória, sem filtros de caminhos, e dependências explícitas `verify → build → deploy`; artefato público do mesmo commit. | A configuração administrativa do Pages precisa ser `workflow`. Enquanto estiver em `legacy`, o risco continua aberto. Confirmar na API e executar uma publicação verificada após a troca. |
+| RLS de tabelas internas sem política | `sb_error_events` e `sb_playlist_share_grants` já negavam acesso por falta de grants e políticas. `supabase/internal_table_denial.sql` acrescenta políticas restritivas explícitas de negação, preservando os caminhos autorizados do servidor. | Migração aplicada no projeto conectado, teste SQL com rollback aprovado e os dois avisos retirados do advisor. Não conceder leitura direta aos clientes para silenciar o linter. |
+| Senhas vazadas | O advisor mantém o alerta. A documentação atual do Supabase limita o recurso nativo ao plano Pro ou superior. Não foi contratado plano nem alterada a política de login. | Decisão do responsável sobre contratar/ativar o recurso. Manter aprovação administrativa e controles de cadastro já existentes, que não equivalem à verificação de senhas vazadas. |
+| Conteúdo de uploads | Validação de formato, tamanho, decodificação e integridade; uploads permitidos conforme plano/permissões. Isso não é antivírus. Os áudios migrados são servidos pela hospedagem Sysmacom. | Implementar quarentena e validação/scan no servidor antes de disponibilizar novos arquivos, se esse controle for exigido. |
+| Cabeçalhos HTTP | CSP da página via meta; o Pages não permite configurar todos os cabeçalhos de segurança exigidos por uma auditoria de headers. | Configuração de uma camada HTTP/CDN compatível, com aprovação e acesso do administrador da infraestrutura. Não prometer proteção por `frame-ancestors` via meta. |
+| Dependências de execução | SDK, transporte e conversor usam versões fixadas em CDN; dependências de CI possuem lockfile. | Empacotar dependências de execução e motor de conversão localmente em uma mudança específica, com testes de CSP, cache e tamanho. |
+| Direitos do código | LICENSE proprietário e `license: UNLICENSED` no pacote; direitos de terceiros separados. | Campos About/tópicos do GitHub dependem de acesso administrativo. |
+
+A proteção das duas tabelas internas não corrige as demais pendências. Não se afirma conformidade integral nem ausência de vulnerabilidades. Nenhuma mensagem técnica foi adicionada às telas dos usuários.
+
+Referências atuais: [RLS sem políticas](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy), [proteção de senhas](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection), [publicação com workflows](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
+
+## Histórico da auditoria inicial
+
 Revisão de 24/10/2026. Escopo: código do site/PWA, importação de backups, Auth, funções SQL, políticas RLS e configuração dos dois buckets do projeto conectado. Não é certificação de segurança nem pentest externo completo.
 
 ## Correções aplicadas
@@ -27,7 +47,7 @@ As operações autenticadas do app usam Bearer token no cabeçalho, e não cooki
 1. **Validação do conteúdo no servidor / antivírus:** MIME e extensão são declarados pelo cliente; SHA-256 confirma integridade, não ausência de malware. Ainda não há quarentena com aprovação no servidor, antivírus ou transcodificação. Para endurecer a publicação de exemplos, o próximo passo é upload privado em quarentena, validação/scan server-side e somente então promoção ao bucket público, impedindo escrita direta nesse bucket. A biblioteca permite upload apenas a administradores; arquivos pessoais continuam privados por dono.
 2. **Cabeçalhos HTTP completos:** no GitHub Pages a CSP foi implementada por meta. `frame-ancestors`, `X-Frame-Options`, `X-Content-Type-Options`, `Permissions-Policy` e CSP de worker/Report-Only não podem ser configurados por esse mecanismo. Não foi afirmada proteção completa contra clickjacking. Para esses controles é necessário configurar uma camada HTTP/proxy com suporte a cabeçalhos, mantendo o repositório no GitHub se desejado.
 3. **Proteção contra senhas vazadas:** o advisor do Supabase ainda informa que está desabilitada. Ativar em Auth conforme disponibilidade/configuração do projeto. [Orientação oficial](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection).
-4. **Dependência de CDN:** SDK Supabase com versão principal fixada continua sendo carregado de esm.sh. A CSP permite esse domínio; empacotar dependências localmente reduz essa confiança externa. Estilos inline são permitidos para cores e layouts dinâmicos; scripts inline não são.
+4. **Dependência de CDN:** SDK Supabase com versão exata fixada continua sendo carregado de esm.sh. A CSP permite esse domínio; empacotar dependências localmente reduz essa confiança externa. Estilos inline são permitidos para cores e layouts dinâmicos; scripts inline não são.
 5. **Mídia e sessões:** URLs assinadas privadas duram até 300 segundos. Arquivos já baixados não são revogados retroativamente por bloqueio de conta. O armazenamento offline usa criptografia local, mas não é DRM e uma execução de código confiável na mesma origem pode usar a chave.
 
 ## Verificação e limites
