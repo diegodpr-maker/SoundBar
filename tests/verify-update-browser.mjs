@@ -134,6 +134,9 @@ try {
   // An installation under a repository path uses its own scope and reloads only once.
   build = 57;
   const nested = await browser.newContext({ serviceWorkers: 'allow' }); nested.setDefaultTimeout(20000);
+  // Apply the same accelerated periodic-check clock used by the root scenario.
+  // A check requested during first registration may defer to that next tick.
+  await nested.addInitScript(()=>{const interval=window.setInterval.bind(window);window.setInterval=(fn,delay,...args)=>interval(fn,delay===60000?1000:delay,...args)});
   await nested.route(/https:\/\//, route => route.abort());
   const nestedPage = await nested.newPage(); await nestedPage.goto(origin + '/SoundBar/app.html#studio/one'); await waitBuild(nestedPage, 57);
   await nestedPage.waitForFunction(() => !!navigator.serviceWorker.controller);

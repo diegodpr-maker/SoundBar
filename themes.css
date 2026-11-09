@@ -503,3 +503,9 @@ dialog.library-picker-dialog .sample-preview{position:static;inset:auto;box-shad
 dialog.library-picker-dialog .sample-preview strong{white-space:normal;overflow-wrap:anywhere}
 body.preview-open dialog.library-picker-dialog .library-picker{max-height:32dvh}
 @media(max-width:600px){dialog.library-picker-dialog{padding:18px}dialog.library-picker-dialog .library-picker>div{grid-template-columns:minmax(0,1fr);gap:8px}.library-picker-actions .btn{flex:1;min-width:0;white-space:normal}dialog.library-picker-dialog h2{font-size:22px}}
+
+.offline-banner{flex-wrap:wrap}.offline-banner>span{flex:1 1 200px}.offline-banner .btn{min-height:44px}
+
+/* The independent local workspace does not use the account navigation drawer. */
+body.local-app .sidebar{position:static;inset:auto;visibility:visible;transform:none;width:auto;height:auto;min-height:0;display:block;overflow:visible;padding:18px;z-index:auto}
+@media(max-width:680px){body.local-app .sidebar{padding:0;margin:0 0 22px}}

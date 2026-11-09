@@ -1,8 +1,8 @@
-import {canUpload,requireUpload,planLabel} from './account-plan.js?v=61';
-import {createDeviceAudioCache} from './audio-device-cache.js?v=61';
+import {canUpload,requireUpload,planLabel} from './account-plan.js?v=62';
+import {createDeviceAudioCache} from './audio-device-cache.js?v=62';
 import {accountLimits,limitsFromForm,MiB,GiB,DEFAULT_LIMITS} from './account-limits.js?v=47';
 import {mergePlaylistOrder} from './playlist-order.js?v=46';
-import {offlinePlaylists,isConnectionError} from './offline-playlists.js?v=50';
+import {offlinePlaylists,isConnectionError} from './offline-playlists.js?v=62';
 import {playlistColorStyle} from './playlist-colors.js?v=43';
 import {createPlaylistBatch,runPlaylistBatch,batchCounts} from './playlist-batch.js?v=44';
 import {createEventWakeLock} from './event-wake-lock.js?v=42';
@@ -12,16 +12,17 @@ import {playbackState,pauseTracks,resumeTracks} from './playback-controls.js?v=4
 import {createAdminNotifications} from './admin-notifications.js?v=37';
 import {createUploadLog} from './upload-log.js?v=33';
 import {validateBackup} from './security-utils.js?v=47';
-import {initNavigation} from './app-navigation.js?v=61';
+import {initNavigation} from './app-navigation.js?v=62';
 import {uploadLibraryBatch,validateLibraryFiles,libraryFailureSummary,prepareLibraryFile} from './library-batch.js?v=47';
 import {attachTrackSort} from './track-sort.js?v=46';
 import {offlineAudio} from './offline-audio.js?v=50';
 import {createAudioPool} from './audio-pool.js?v=49';
 import {createPreviewPlayer,previewMessage} from './audio-preview.js?v=33';
-import {getBackend} from './backend.js?v=61';
+import {getBackend} from './backend.js?v=62';
 import {libraryCategories,validateLibraryCategories,saveBlob} from './samples.js?v=52';
 'use strict';
 const $=s=>document.querySelector(s),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const forceOffline=new URLSearchParams(location.search).get('offline')==='1';
 const state={offline:false,savedBoards:[],me:null,overview:null,samples:[],board:null,route:'dashboard',search:'',category:'Todos',busy:false,accounts:[],libraryAdmin:[],contributions:[],pendingContributions:[],shared:null,community:[]};
 const adminNotices=createAdminNotifications({getClient:async()=>(await getBackend()).client});
 let notificationState={status:'loading'},notificationBusy=false,notificationVersion=0,accountDeletionBusy=false;
@@ -74,8 +75,8 @@ async function enterOffline(preservePlayback=false){const data=await offlinePlay
 function offlineUI(){document.body.classList.toggle('offline-mode',state.offline);$('#offline-banner').hidden=!state.offline;for(const a of document.querySelectorAll('[data-nav]'))if(!['dashboard','playlists','downloads'].includes(a.dataset.nav))a.hidden=state.offline||(['admin','admin-library'].includes(a.dataset.nav)&&!state.me.access.is_admin);if(state.offline){for(const b of document.querySelectorAll('#view button[data-action],#view .pad-drag'))if(!['play','event-mode','clear-device','retry','reconnect','signout'].includes(b.dataset.action))b.disabled=true;for(const a of document.querySelectorAll('#view a'))if(!/app.html#(?:playlists|studio\/|downloads)/.test(a.getAttribute('href')||''))a.hidden=true}}
 let watchingAuth=false;
 async function onlineBackend(){const backend=await getBackend();if(!watchingAuth){watchingAuth=true;backend.client.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'){void revokeDownloads();endSessionWork();void adminNotices.localUnsubscribe();stopAll();clearPreparedAudio();location.replace('login.html')}else if(event==='SIGNED_IN'&&state.me&&session?.user?.id!==state.me.profile.id){void revokeDownloads();endSessionWork();stopAll();clearPreparedAudio();location.reload()}})}return backend}
-async function verifyReconnection(){if(!state.offline||navigator.onLine===false)return;try{const backend=await onlineBackend(),me=await backend.call('/me');if(me.profile.id!==state.me.profile.id||me.access.status!=='approved'){await revokeDownloads();endSessionWork();stopAll();clearPreparedAudio();location.replace('login.html');return}const overview=await backend.call('/overview');state.me=me;state.overview=overview;state.offline=false;updateAccount();render();toast('Conexão restabelecida.')}catch(error){if([400,401,403].includes(Number(error.status))){await revokeDownloads();endSessionWork();stopAll();clearPreparedAudio();location.replace('login.html')}}}
-async function reconnect(){if(navigator.onLine===false){toast('Você ainda está sem conexão.');return}try{const backend=await getBackend(),me=await backend.call('/me');if(me.profile.id!==state.me.profile.id||me.access.status!=='approved'){await revokeDownloads();location.replace('login.html');return}location.reload()}catch(error){if([400,401,403].includes(error.status)){await revokeDownloads();location.replace('login.html');return}toast('Não foi possível conectar. Suas playlists baixadas continuam disponíveis.',true)}}
+async function verifyReconnection(){if(forceOffline||!state.offline||navigator.onLine===false)return;try{const backend=await onlineBackend(),me=await backend.call('/me');if(me.profile.id!==state.me.profile.id||me.access.status!=='approved'){await revokeDownloads();endSessionWork();stopAll();clearPreparedAudio();location.replace('login.html');return}const overview=await backend.call('/overview');state.me=me;state.overview=overview;state.offline=false;updateAccount();render();toast('Conexão restabelecida.')}catch(error){if([400,401,403].includes(Number(error.status))){await revokeDownloads();endSessionWork();stopAll();clearPreparedAudio();location.replace('login.html')}}}
+async function reconnect(){if(navigator.onLine===false){toast('Você ainda está sem conexão.');return}try{const backend=await getBackend(),me=await backend.call('/me');if(me.profile.id!==state.me.profile.id||me.access.status!=='approved'){await revokeDownloads();location.replace('login.html');return}if(forceOffline){const url=new URL(location.href);url.searchParams.delete('offline');location.replace(url.href)}else location.reload()}catch(error){if([400,401,403].includes(error.status)){await revokeDownloads();location.replace('login.html');return}toast('Não foi possível conectar. Suas playlists baixadas continuam disponíveis.',true)}}
 async function signout(){endSessionWork();stopAll();clearPreparedAudio();await revokeDownloads();if(state.offline){localStorage.removeItem('soundbar-supabase-session');localStorage.removeItem('soundbar-supabase-session-code-verifier');location.replace('login.html');return}await adminNotices.disable().catch(()=>adminNotices.localUnsubscribe());await(await getBackend()).client.auth.signOut();location.replace('login.html')}
 
 function wave(seed=0){return '<div class="playlist-art">'+[20,36,48,30,58,40,26,44,32,17].map((h,i)=>`<i style="height:${Math.max(10,h-(seed%3)*4)}px"></i>`).join('')+'</div>'}
@@ -236,10 +237,11 @@ $('#pause-all').onclick=async()=>{
 };
 $('#next-track').onclick=()=>{const next=followingTrack();if(!next)return;if(!usesEventFader())stopAll();void play(next.id)};$('#stop-all').onclick=()=>{stopAll();if(state.route==='library')render()};$('#master-volume').oninput=e=>{$('#volume-text').textContent=e.target.value+'%';e.target.setAttribute('aria-valuetext',e.target.value+'%');audioLevels.setMaster(e.target.value/100,active.values());if(preview)preview.audio.volume=e.target.value/100};document.querySelectorAll('[data-volume-step]').forEach(button=>button.addEventListener('click',()=>{const input=$('#master-volume');input.value=Math.max(0,Math.min(100,Number(input.value)+Number(button.dataset.volumeStep)));input.dispatchEvent(new Event('input',{bubbles:true}))}));document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#modal').open){stopAll();return}if($('#modal').open||e.target.closest('input,select,textarea,button')||e.ctrlKey||e.metaKey||e.altKey||e.repeat)return;const n=Number(e.key);if(n>=1&&n<=9&&state.board?.tracks[n-1]){e.preventDefault();play(state.board.tracks[n-1].id)}});window.addEventListener('hashchange',navigate);window.addEventListener('pagehide',()=>{endSessionWork();stopAll();clearPreparedAudio()});window.addEventListener('pageshow',()=>{if(document.body.classList.contains('event-mode')&&state.me?.access?.status==='approved')void eventWake.setActive(true)});
 (async()=>{try{
+ if(forceOffline){if(await enterOffline()){await navigate();return}location.replace('local.html');return}
  if(navigator.onLine===false&&await enterOffline()){await navigate();return}
  const backend=await onlineBackend();
  state.me=await api('/me');const oldOwner=offlinePlaylists.owner();if(oldOwner&&oldOwner!==state.me.profile.id)await offlinePlaylists.clear(oldOwner);state.savedBoards=await offlinePlaylists.boards(state.me.profile.id).catch(()=>[]);state.samples=await api('/samples');if(!state.me.access.is_admin)void adminNotices.localUnsubscribe();updateAccount();await navigate();
- }catch(e){if((navigator.onLine===false||isConnectionError(e))&&await enterOffline()){await navigate();return}$('#view').innerHTML=`<div class="error-panel"><h2>Seu estúdio não carregou.</h2><p>${esc(e.message)}</p><button class="btn" data-action="reload">Tentar novamente</button> <a class="btn ghost" href="login.html">Entrar</a></div>`}finally{updateBooting=false}})();
+ }catch(e){if(Number(e.status)===402&&(await offlinePlaylists.restore())?.boards.length){location.replace('app.html?offline=1#downloads');return}if((navigator.onLine===false||isConnectionError(e))&&await enterOffline()){await navigate();return}$('#view').innerHTML=`<div class="error-panel"><h2>Seu estúdio não carregou.</h2><p>${esc(Number(e.status)===402?'A conta está indisponível no momento. Você pode usar os arquivos deste aparelho.':e.message)}</p><a class="btn ghost" href="app.html?offline=1#downloads">Usar offline</a><button class="btn" data-action="reload">Tentar novamente</button> <a class="btn ghost" href="login.html">Entrar</a></div>`}finally{updateBooting=false}})();
 
 
 

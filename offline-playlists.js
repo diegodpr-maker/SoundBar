@@ -27,4 +27,4 @@ export function createOfflinePlaylists({audio=offlineAudio,storage=globalThis.lo
  };
 }
 export const offlinePlaylists=createOfflinePlaylists();
-export function isConnectionError(error){return ![400,401,403,404].includes(Number(error?.status))&&([502,503,504].includes(Number(error?.status))||error?.name==='AuthRetryableFetchError'||error instanceof TypeError||/fetch|network|offline|connection|conexão|Failed to load/i.test(error?.message||''))}
+export function isConnectionError(error){return ![400,401,403,404].includes(Number(error?.status))&&([402,502,503,504].includes(Number(error?.status))||error?.name==='AuthRetryableFetchError'||error instanceof TypeError||/fetch|network|offline|connection|conexão|Failed to load/i.test(error?.message||''))}
