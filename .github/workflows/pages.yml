@@ -70,7 +70,7 @@ jobs:
                   assert json.loads(read("deployment.json"))["commit"] == expected
                   build = re.search(r'const BUILD=(\d+)', read("sw.js")).group(1)
                   assert 'data-harmony-build="' + build + '"' in read("offline.html")
-                  assert "offline-playlists.js" in read("offline-entry.js")
+                  assert "app.html" in read("offline-entry.js")
                   print(json.dumps({"commit": expected, "offline_entry_published": True}))
                   break
               except Exception:

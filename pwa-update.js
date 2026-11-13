@@ -1,7 +1,7 @@
 /* One update coordinator for installed and browser sessions. No account data is reset. */
 (() => {
   if (window.harmonyUpdates || !('serviceWorker' in navigator)) return;
-  const VERSION = 65;
+  const VERSION = 66;
   const sw = navigator.serviceWorker;
   const workerURL = new URL('./sw.js', document.currentScript.src);
   const requiresGuard = /\/(app|login|local)\.html$/.test(location.pathname);

@@ -87,3 +87,8 @@ O teste de navegador usa o user-agent Android real junto ao viewport mobile para
 ## Relatório local de diagnóstico
 
 A entrada offline permite baixar um relatório para distinguir outra origem, ponteiro local ausente, chave ou documento ausente e dados não reconhecidos. A inspeção de IndexedDB usa somente transações readonly, não apaga nem sobrescreve registros e aborta a criação de um banco ausente. O relatório contém contagens, nomes de playlists do proprietário local reconhecido e estado do cache público. Não exporta credenciais, UUIDs de usuários, chaves de criptografia nem áudio. Dados de outra sessão autenticada não são decifrados. O relatório é gerado e baixado somente no próprio aparelho, sem envio automático. A área local independente utiliza outro banco e apresenta botões iniciais sem arquivos, que não indicam exclusão dos downloads da conta.
+
+
+## Interface única no modo offline
+
+Os atalhos `offline.html` abrem a mesma aplicação de `app.html`, com menu retrátil, cards, temas e modo evento. Sem downloads, a interface apresenta uma lista vazia e entrada para a conta; não encaminha automaticamente ao player local legado nem cria playlists de demonstração. O estado vazio é transitório em memória, sem gravar identidade, alterar arquivos ou permitir chamadas de nuvem. O relatório local fica no menu lateral. O player legado continua acessível por seu endereço para preservar o uso de arquivos previamente importados nele.
