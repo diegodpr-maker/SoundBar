@@ -54,3 +54,26 @@ jobs:
       - name: Publish the artifact from this verified commit
         id: publication
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346
+
+      - name: Verify the published offline entry and commit
+        run: |
+          python3 - <<'PY'
+          import json, os, time, urllib.request
+          base = "https://harmony.sysmacom.com.br/"
+          expected = os.environ["GITHUB_SHA"]
+          def read(path):
+              req = urllib.request.Request(base + path + "?verify=" + expected, headers={"Cache-Control": "no-cache"})
+              with urllib.request.urlopen(req, timeout=20) as response:
+                  return response.read().decode("utf-8")
+          for attempt in range(6):
+              try:
+                  assert json.loads(read("deployment.json"))["commit"] == expected
+                  assert 'data-harmony-build="63"' in read("offline.html")
+                  assert "offline-playlists.js" in read("offline-entry.js")
+                  print(json.dumps({"commit": expected, "offline_entry_published": True}))
+                  break
+              except Exception:
+                  if attempt == 5:
+                      raise
+                  time.sleep(5)
+          PY

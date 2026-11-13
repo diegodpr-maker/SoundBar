@@ -509,3 +509,6 @@ body.preview-open dialog.library-picker-dialog .library-picker{max-height:32dvh}
 /* The independent local workspace does not use the account navigation drawer. */
 body.local-app .sidebar{position:static;inset:auto;visibility:visible;transform:none;width:auto;height:auto;min-height:0;display:block;overflow:visible;padding:18px;z-index:auto}
 @media(max-width:680px){body.local-app .sidebar{padding:0;margin:0 0 22px}}
+
+/* Offline entry uses only the public shell and local device data. */
+.offline-entry-page{min-height:100dvh;display:grid;place-items:center;padding-block:32px}.offline-entry-card{width:min(100%,600px);padding:clamp(24px,5vw,48px);border:1px solid var(--line);border-radius:24px;background:var(--panel)}.offline-entry-card h1{font-size:clamp(28px,6vw,40px);line-height:1.15;margin:20px 0 16px}.offline-entry-card p{line-height:1.6}.offline-entry-actions{display:grid;gap:12px;margin-top:24px}.offline-entry-actions .btn{min-height:52px;justify-content:center;text-align:center}.offline-entry-actions [hidden]{display:none!important}

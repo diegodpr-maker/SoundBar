@@ -1,0 +1,4 @@
+import {offlinePlaylists} from './offline-playlists.js?v=63';
+// This entry must never initialize the online backend or authentication SDK.
+const status=document.querySelector('#offline-entry-status'),downloads=document.querySelector('#offline-downloads');
+(async()=>{let timer;try{const data=await Promise.race([offlinePlaylists.restore(),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Local read timed out')),8000)})]);const count=data?.boards.length||0;downloads.hidden=!count;status.textContent=count?(count===1?'1 playlist baixada neste aparelho.':count+' playlists baixadas neste aparelho.'):'Nenhuma playlist baixada encontrada neste aparelho. Você pode usar arquivos locais.'}catch{status.textContent='Não foi possível abrir as playlists baixadas. Você pode usar arquivos locais.'}finally{clearTimeout(timer);globalThis.harmonyUpdates?.ready()}})();

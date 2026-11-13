@@ -69,3 +69,9 @@ Na playlist, Biblioteca abre uma janela ampla com nomes completos e prévia de �
 “Usar offline” fica disponível durante a abertura e na tela de login. Abre as playlists completas já baixadas neste aparelho, na interface atual, sem carregar o SDK de autenticação ou consultar o serviço de contas. Sem downloads completos, encaminha para `local.html`, onde playlists e arquivos são mantidos somente no aparelho. A faixa “Arquivos do aparelho” permite abrir esse modo também a partir das playlists baixadas. O modo explícito `app.html?offline=1#downloads` só tenta reconectar quando a pessoa solicita; Reconectar exige novamente a validação normal da conta.
 
 HTTP 402 é tratado como indisponibilidade do serviço e permite recuperar somente os downloads locais já aprovados. Login, área administrativa, biblioteca online, dados de outros usuários, URLs privadas novas e gravações na nuvem continuam protegidos. Erros 400/401/403/404 não são convertidos em autorização offline. O armazenamento do aparelho precisa ter uma cópia completa; o modo local não recupera arquivos que só existem na nuvem.
+
+## Sessão expirada e acesso local
+
+A entrada instalada passa por offline.html, sem importar o backend. Ela oferece playlists completas já baixadas, arquivos do aparelho e acesso separado à conta online. O encerramento automático da sessão/JWT não remove os downloads. Uma recusa confirmada de conta (403 ou estado bloqueado/removido), a exclusão explícita do download e a saída manual continuam aplicando os controles de limpeza previstos. Falha de autenticação não concede permissão de rede: a leitura local permanece limitada aos dados já presentes no aparelho e ao proprietário local reconhecido.
+
+Cópias eliminadas por uma versão anterior ou pelo navegador não podem ser reconstruídas apenas com uma atualização. O bloqueio de cota do Supabase continua impedindo obter novos dados privados da nuvem até sua regularização.
