@@ -72,6 +72,6 @@ HTTP 402 é tratado como indisponibilidade do serviço e permite recuperar somen
 
 ## Sessão expirada e acesso local
 
-A entrada instalada passa por offline.html, sem importar o backend. Ela oferece playlists completas já baixadas, arquivos do aparelho e acesso separado à conta online. O encerramento automático da sessão/JWT não remove os downloads. Uma recusa confirmada de conta (403 ou estado bloqueado/removido), a exclusão explícita do download e a saída manual continuam aplicando os controles de limpeza previstos. Falha de autenticação não concede permissão de rede: a leitura local permanece limitada aos dados já presentes no aparelho e ao proprietário local reconhecido.
+A entrada instalada passa por offline.html, sem importar o backend. Ela oferece playlists completas já baixadas, arquivos do aparelho e acesso separado à conta online. O encerramento automático da sessão/JWT não remove os downloads. Uma recusa confirmada de conta (403 ou estado bloqueado/removido), e a exclusão explícita do download continuam aplicando os controles de limpeza previstos. A saída manual encerra apenas a sessão online e preserva as cópias locais. Falha de autenticação não concede permissão de rede: a leitura local permanece limitada aos dados já presentes no aparelho e ao proprietário local reconhecido.
 
 Cópias eliminadas por uma versão anterior ou pelo navegador não podem ser reconstruídas apenas com uma atualização. O bloqueio de cota do Supabase continua impedindo obter novos dados privados da nuvem até sua regularização.
