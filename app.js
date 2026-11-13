@@ -1,8 +1,8 @@
-import {canUpload,requireUpload,planLabel} from './account-plan.js?v=64';
-import {createDeviceAudioCache} from './audio-device-cache.js?v=64';
+import {canUpload,requireUpload,planLabel} from './account-plan.js?v=65';
+import {createDeviceAudioCache} from './audio-device-cache.js?v=65';
 import {accountLimits,limitsFromForm,MiB,GiB,DEFAULT_LIMITS} from './account-limits.js?v=47';
 import {mergePlaylistOrder} from './playlist-order.js?v=46';
-import {offlinePlaylists,isConnectionError} from './offline-playlists.js?v=64';
+import {offlinePlaylists,isConnectionError} from './offline-playlists.js?v=65';
 import {playlistColorStyle} from './playlist-colors.js?v=43';
 import {createPlaylistBatch,runPlaylistBatch,batchCounts} from './playlist-batch.js?v=44';
 import {createEventWakeLock} from './event-wake-lock.js?v=42';
@@ -12,13 +12,13 @@ import {playbackState,pauseTracks,resumeTracks} from './playback-controls.js?v=4
 import {createAdminNotifications} from './admin-notifications.js?v=37';
 import {createUploadLog} from './upload-log.js?v=33';
 import {validateBackup} from './security-utils.js?v=47';
-import {initNavigation} from './app-navigation.js?v=64';
+import {initNavigation} from './app-navigation.js?v=65';
 import {uploadLibraryBatch,validateLibraryFiles,libraryFailureSummary,prepareLibraryFile} from './library-batch.js?v=47';
 import {attachTrackSort} from './track-sort.js?v=46';
 import {offlineAudio} from './offline-audio.js?v=50';
 import {createAudioPool} from './audio-pool.js?v=49';
 import {createPreviewPlayer,previewMessage} from './audio-preview.js?v=33';
-import {getBackend} from './backend.js?v=64';
+import {getBackend} from './backend.js?v=65';
 import {libraryCategories,validateLibraryCategories,saveBlob} from './samples.js?v=52';
 'use strict';
 const $=s=>document.querySelector(s),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

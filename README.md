@@ -82,3 +82,8 @@ Cópias eliminadas por uma versão anterior ou pelo navegador não podem ser rec
 A abertura offline por `login.html?pwa=1` ou `app.html` não exige login mesmo quando não há uma playlist completa reconhecida. Playlists completas salvas abrem diretamente; sem uma cópia completa, abre a entrada local para arquivos do aparelho. O botão Usar offline pertence ao cartão de login, pois a coluna de apresentação é ocultada no PWA mobile. A ausência de metadados ou arquivos locais não confirma se foram excluídos, limpos pelo navegador ou nunca concluídos; nenhuma dessas situações é resolvida apenas removendo a autenticação.
 
 O teste de navegador usa o user-agent Android real junto ao viewport mobile para aplicar a mesma regra de layout do aparelho. Ele fecha e reabre o atalho antigo sem rede, com e sem downloads, e confere a visibilidade do acesso local após sair da conta.
+
+
+## Relatório local de diagnóstico
+
+A entrada offline permite baixar um relatório para distinguir outra origem, ponteiro local ausente, chave ou documento ausente e dados não reconhecidos. A inspeção de IndexedDB usa somente transações readonly, não apaga nem sobrescreve registros e aborta a criação de um banco ausente. O relatório contém contagens, nomes de playlists do proprietário local reconhecido e estado do cache público. Não exporta credenciais, UUIDs de usuários, chaves de criptografia nem áudio. Dados de outra sessão autenticada não são decifrados. O relatório é gerado e baixado somente no próprio aparelho, sem envio automático. A área local independente utiliza outro banco e apresenta botões iniciais sem arquivos, que não indicam exclusão dos downloads da conta.
