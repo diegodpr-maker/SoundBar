@@ -58,7 +58,7 @@ jobs:
       - name: Verify the published offline entry and commit
         run: |
           python3 - <<'PY'
-          import json, os, time, urllib.request
+          import json, os, re, time, urllib.request
           base = "https://harmony.sysmacom.com.br/"
           expected = os.environ["GITHUB_SHA"]
           def read(path):
@@ -68,7 +68,8 @@ jobs:
           for attempt in range(6):
               try:
                   assert json.loads(read("deployment.json"))["commit"] == expected
-                  assert 'data-harmony-build="63"' in read("offline.html")
+                  build = re.search(r'const BUILD=(\d+)', read("sw.js")).group(1)
+                  assert 'data-harmony-build="' + build + '"' in read("offline.html")
                   assert "offline-playlists.js" in read("offline-entry.js")
                   print(json.dumps({"commit": expected, "offline_entry_published": True}))
                   break

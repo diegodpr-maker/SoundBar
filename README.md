@@ -75,3 +75,10 @@ HTTP 402 é tratado como indisponibilidade do serviço e permite recuperar somen
 A entrada instalada passa por offline.html, sem importar o backend. Ela oferece playlists completas já baixadas, arquivos do aparelho e acesso separado à conta online. O encerramento automático da sessão/JWT não remove os downloads. Uma recusa confirmada de conta (403 ou estado bloqueado/removido), e a exclusão explícita do download continuam aplicando os controles de limpeza previstos. A saída manual encerra apenas a sessão online e preserva as cópias locais. Falha de autenticação não concede permissão de rede: a leitura local permanece limitada aos dados já presentes no aparelho e ao proprietário local reconhecido.
 
 Cópias eliminadas por uma versão anterior ou pelo navegador não podem ser reconstruídas apenas com uma atualização. O bloqueio de cota do Supabase continua impedindo obter novos dados privados da nuvem até sua regularização.
+
+
+## Atalhos antigos no Android e inicialização sem conexão
+
+A abertura offline por `login.html?pwa=1` ou `app.html` não exige login mesmo quando não há uma playlist completa reconhecida. Playlists completas salvas abrem diretamente; sem uma cópia completa, abre a entrada local para arquivos do aparelho. O botão Usar offline pertence ao cartão de login, pois a coluna de apresentação é ocultada no PWA mobile. A ausência de metadados ou arquivos locais não confirma se foram excluídos, limpos pelo navegador ou nunca concluídos; nenhuma dessas situações é resolvida apenas removendo a autenticação.
+
+O teste de navegador usa o user-agent Android real junto ao viewport mobile para aplicar a mesma regra de layout do aparelho. Ele fecha e reabre o atalho antigo sem rede, com e sem downloads, e confere a visibilidade do acesso local após sair da conta.
