@@ -1,2 +1,2 @@
 // Configuração pública do projeto SoundBar. Acesso privado protegido por RLS.
-window.SOUNDBAR_CONFIG = Object.freeze({"supabaseUrl":"https://fcmsojjtkiehsobbkjnr.supabase.co","supabaseKey":"sb_publishable_yX33DKLkCPDsNdCSV3sJmA_bd8yrd3f"});
+window.SOUNDBAR_CONFIG = Object.freeze({"supabaseUrl":"https://xrwvszghwijgagarfcnf.supabase.co","supabaseKey":"sb_publishable_zgRJ9M_95g0AIMGlBlp13Q_CFQoqA8g"});

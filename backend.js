@@ -1,6 +1,6 @@
 import {externalAudioMap} from './external-audio.js?v=62';
 import {canUpload,requireUpload} from './account-plan.js?v=62';
-import {createSessionTransport} from './session-transport.js?v=48';
+import {createSessionTransport} from './session-transport.js?v=67';
 import {accountLimits,validateAccountLimits} from './account-limits.js?v=47';
 import {transferPlaylistAudio} from './playlist-transfer.js?v=42';
 import {createResumableUploader} from './resumable-upload.js?v=33';

@@ -71,6 +71,15 @@ jobs:
                   build = re.search(r'const BUILD=(\d+)', read("sw.js")).group(1)
                   assert 'data-harmony-build="' + build + '"' in read("offline.html")
                   assert "app.html" in read("offline-entry.js")
+                  config = json.loads(re.search(r'Object.freeze\((\{.*\})\)', read("config.js")).group(1))
+                  assert config["supabaseUrl"] == "https://xrwvszghwijgagarfcnf.supabase.co"
+                  for path in ["app.html", "login.html", "offline.html", "index.html", "local.html"]:
+                      html = read(path)
+                      assert "xrwvszghwijgagarfcnf.supabase.co" in html
+                      assert "fcmsojjtkiehsobbkjnr.supabase.co" not in html
+                  request = urllib.request.Request(config["supabaseUrl"] + "/auth/v1/health", headers={"apikey": config["supabaseKey"]})
+                  with urllib.request.urlopen(request, timeout=20) as response:
+                      assert response.status == 200
                   print(json.dumps({"commit": expected, "offline_entry_published": True}))
                   break
               except Exception:

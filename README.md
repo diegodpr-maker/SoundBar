@@ -92,3 +92,10 @@ A entrada offline permite baixar um relatório para distinguir outra origem, pon
 ## Interface única no modo offline
 
 Os atalhos `offline.html` abrem a mesma aplicação de `app.html`, com menu retrátil, cards, temas e modo evento. Sem downloads, a interface apresenta uma lista vazia e entrada para a conta; não encaminha automaticamente ao player local legado nem cria playlists de demonstração. O estado vazio é transitório em memória, sem gravar identidade, alterar arquivos ou permitir chamadas de nuvem. O relatório local fica no menu lateral. O player legado continua acessível por seu endereço para preservar o uso de arquivos previamente importados nele.
+
+
+## Migração de projeto em 14/11/2026
+
+O destino Harmony fica no projeto `xrwvszghwijgagarfcnf`, organização `Harmony`. A migração preserva UUIDs, hashes de senha, permissões, playlists, biblioteca e as chaves de mídia do cPanel. As sessões antigas não são transferidas; é necessário entrar novamente com o mesmo e-mail e senha. A limpeza de sessão de outro projeto remove apenas a sessão online e seu verificador PKCE; não limpa o ponteiro ou o banco dos áudios offline. Os áudios continuam no cPanel; os buckets do Supabase permanecem sem objetos.
+
+A restauração foi conferida com contagens e SHA-256 por tabela nas 41 tabelas exportadas, e o isolamento foi verificado com as quatro identidades existentes sem criar contas nem enviar e-mails. Funções Edge ativas: cadastro, relatório de erros, notificações administrativas e exclusão de conta. Ferramentas temporárias de exportação e diagnóstico do projeto antigo não são reativadas.

@@ -1,6 +1,6 @@
 import {createRequire} from 'node:module';import {readFileSync} from 'node:fs';import {fileURLToPath} from 'node:url';import assert from 'node:assert/strict';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]),sdk=readFileSync(process.argv[3]),tus=readFileSync(process.argv[4]),root=new URL('../',import.meta.url),tone=Buffer.from(readFileSync(new URL('tests/fixtures/access-tone.mp3.base64',root),'utf8'),'base64');
-const host='fcmsojjtkiehsobbkjnr.supabase.co',admin='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',member='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',playlist='cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+const host='xrwvszghwijgagarfcnf.supabase.co',admin='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',member='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',playlist='cccccccc-cccc-4ccc-8ccc-cccccccccccc';
 const browser=await chromium.launch({headless:true});let catalog=[],stored=new Map(),requests=[],stall=false;
 const session=(id=admin,expired=false)=>({access_token:'fixture-'+id,refresh_token:'refresh-fixture',token_type:'bearer',expires_in:3600,expires_at:Math.floor(Date.now()/1000)+(expired?-100:3600),user:{id,email:'fixture@example.test',aud:'authenticated',role:'authenticated',user_metadata:{display_name:'Audit',is_admin:true},app_metadata:{}}});
 async function fixture({id=admin,expired=false,empty=false}={}){

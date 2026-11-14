@@ -1,4 +1,15 @@
 const SESSION_KEY='soundbar-supabase-session';
+// A project change invalidates only the network session. Device downloads and
+// their owner pointer belong to this app origin and must remain untouched.
+export function discardForeignProjectSession(storage,url){
+ try{
+  const session=JSON.parse(storage.getItem(SESSION_KEY)||'null');
+  const part=session?.access_token?.split('.')[1];if(!part)return false;
+  const payload=JSON.parse(atob(part.replace(/-/g,'+').replace(/_/g,'/')));
+  if(typeof payload.iss!=='string'||!/^https:\/\/[^/]+\.supabase\.co\/auth\/v1\/?$/.test(payload.iss)||new URL(payload.iss).origin===new URL(url).origin)return false;
+  storage.removeItem(SESSION_KEY);storage.removeItem(SESSION_KEY+'-code-verifier');return true;
+ }catch{return false}
+}
 const failure=(message,status=503,code='CONNECTION_TIMEOUT')=>Object.assign(Error(message),{status,code,retryable:false});
 function deadline(task,ms,message){let timer;return Promise.race([Promise.resolve().then(task),new Promise((_,reject)=>{timer=setTimeout(()=>reject(failure(message,503,'SESSION_BUSY')),ms)})]).finally(()=>clearTimeout(timer))}
 export function boundedFetch(fetcher=fetch,{timeout=15000}={}){return async(input,options={})=>{
@@ -10,6 +21,7 @@ export function boundedFetch(fetcher=fetch,{timeout=15000}={}){return async(inpu
 // the existing access token without waiting on Auth's cross-tab mutex. The server
 // validates that token on every request; no role is trusted from local metadata.
 export function createSessionTransport(createClient,{url,key},{storage=globalThis.localStorage,fetcher=globalThis.fetch,now=()=>Date.now(),sessionTimeout=12000,requestTimeout=15000,events=globalThis.window}={}){
+ discardForeignProjectSession(storage,url);
  let disabled=false,refreshing=null;const listeners=new Set();
  const adapter={getItem:k=>disabled&&k===SESSION_KEY?null:storage.getItem(k),setItem:(k,v)=>{if(!disabled||k!==SESSION_KEY)storage.setItem(k,v)},removeItem:k=>storage.removeItem(k)};
  const network=boundedFetch(fetcher,{timeout:requestTimeout});

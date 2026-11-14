@@ -1,5 +1,5 @@
 (() => {
-  const endpoint = 'https://fcmsojjtkiehsobbkjnr.supabase.co/functions/v1/harmony-audio-export-once';
+  const endpoint = 'https://xrwvszghwijgagarfcnf.supabase.co/functions/v1/harmony-audio-export-once';
   const key = new URLSearchParams(location.hash.slice(1)).get('chave') || '';
   const status = document.querySelector('#status');
   const retry = document.querySelector('#retry');

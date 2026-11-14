@@ -119,7 +119,7 @@ create policy sb_external_audio_update_guard on storage.objects as restrictive f
 
 alter table public.sb_library_tracks drop constraint sb_library_tracks_check;
 alter table public.sb_library_tracks add constraint sb_library_tracks_check check(
- (object_path is not null and audio_url='https://fcmsojjtkiehsobbkjnr.supabase.co/storage/v1/object/public/soundbar-library/'||object_path)
+ (object_path is not null and audio_url='https://xrwvszghwijgagarfcnf.supabase.co/storage/v1/object/public/soundbar-library/'||object_path)
  or (object_path is null and (active=false or (
  audio_url ~ '^https://sysmacom[.]com[.]br/(musicas-harmony/|harmony-midia/biblioteca/)'
  and audio_url ~* '[.](mp3|wav|ogg|m4a|aac|flac|webm)$'

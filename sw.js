@@ -1,8 +1,8 @@
-const CACHE='sysmacom-harmony-pages-v66';
+const CACHE='sysmacom-harmony-pages-v67';
 // Only the public application shell is cached. Account metadata and audio remain
 // encrypted in IndexedDB; external requests, API responses and signed URLs are excluded.
 const FILES=["./","./offline.html","./offline-entry.js","./offline-diagnostics.js","./admin-notifications.js","./account-limits.js","./account-plan.js","./audio-file-read.js","./app-navigation.js","./app.html","./app.js","./audio-conversion.js","./audio-device-cache.js","./audio-levels.js","./audio-pool.js","./audio-preview.js","./audio-validation.js","./auth.js","./backend.js","./config.js","./error-monitor.js","./event-fader.js","./event-wake-lock.js","./external-audio.js","./index.html","./landing.js","./library-batch.js","./local.html","./local.js","./login.html","./manifest.webmanifest","./offline-audio.js","./offline-playlists.js","./playback-controls.js","./playlist-batch.js","./playlist-colors.js","./playlist-order.js","./playlist-transfer.js","./pwa-entry.js","./pwa-update.js","./pwa-install.css","./pwa-install.js","./resumable-upload.js","./samples.js","./security-utils.js","./session-transport.js","./style.css","./theme.js","./themes.css","./track-sort.js","./upload-error.js","./upload-log.js","./upload-transfer.js","./wma-worker.js","./harmony-rgb-180.png","./harmony-rgb-192.png","./harmony-rgb-512.png"];
-const BUILD=66;
+const BUILD=67;
 async function cacheShell(){
  const cache=await caches.open(CACHE),queue=[...FILES];
  try{

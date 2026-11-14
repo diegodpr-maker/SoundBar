@@ -71,7 +71,7 @@ revoke all on function public.sb_admin_notifications(text,jsonb) from public,ano
 grant execute on function public.sb_admin_notifications(text,jsonb) to authenticated;
 
 create function soundbar_private.sb_push_wake() returns bigint language sql security definer set search_path='' as $$
- select net.http_post(url:='https://fcmsojjtkiehsobbkjnr.supabase.co/functions/v1/soundbar-admin-push',headers:=jsonb_build_object('Content-Type','application/json','Authorization','Bearer '||dispatch_secret),body:='{}'::jsonb,timeout_milliseconds:=55000) from soundbar_private.sb_push_config where id=true;
+ select net.http_post(url:='https://xrwvszghwijgagarfcnf.supabase.co/functions/v1/soundbar-admin-push',headers:=jsonb_build_object('Content-Type','application/json','Authorization','Bearer '||dispatch_secret),body:='{}'::jsonb,timeout_milliseconds:=55000) from soundbar_private.sb_push_config where id=true;
 $$;
 revoke all on function soundbar_private.sb_push_wake() from public,anon,authenticated;
 
